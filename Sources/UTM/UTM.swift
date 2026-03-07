@@ -16,24 +16,29 @@ import TransverseMercatorInternal
 import StaticUTM
 
 public struct UTM : MultiCoordinate {
-    public var latitude: CLLocationDegrees { return geodeticCoordinate.latitude }
-    
-    public var longitude: CLLocationDegrees { return geodeticCoordinate.longitude }
-    
-    public var zone : Int32
-    
-    public var hemisphere: Hemisphere
-    
-    public var easting: Double
-    
-    public var northing: Double
-    
+    /// The cartesian UTM components: hemisphere, zone, easting, and northing.
+    public var utmCoordinate: UTMCoordinate
+
+    /// The meridian convergence at the point in degrees.
+    ///
+    /// This is the angle between grid north and true north.
     public var convergence: Double
-    
+
+    /// The scale factor of the projection at the point.
     public var centralScale: Double
-    
+
+    /// The geographic coordinate (latitude and longitude) represented by this UTM coordinate.
     public var geodeticCoordinate: CLLocationCoordinate2D
-    
+
+    // MARK: - MultiCoordinate conformance (forwarded from utmCoordinate)
+
+    public var hemisphere: Hemisphere { utmCoordinate.hemisphere }
+    public var zone: Int32 { utmCoordinate.zone }
+    public var easting: Double { utmCoordinate.easting }
+    public var northing: Double { utmCoordinate.northing }
+    public var latitude: CLLocationDegrees { geodeticCoordinate.latitude }
+    public var longitude: CLLocationDegrees { geodeticCoordinate.longitude }
+
     /// Init with UTM Coordinates
     ///
     /// Valid UTM zones are in the range [1, 60]
@@ -68,7 +73,7 @@ public struct UTM : MultiCoordinate {
         guard easting >= slop && easting <= UTMConstants.maximumUTMEasting - slop else {
             throw .eastingOutOfBounds(easting: easting)
         }
-        
+
         if hemisphere == .northern {
             guard northing >= UTMConstants.minimumNorthernUTMNorthing + slop &&
                   northing <= UTMConstants.maximumNorthernUTMNorthing - slop else {
@@ -80,22 +85,18 @@ public struct UTM : MultiCoordinate {
                 throw .northingOutOfBounds(northing: northing)
             }
         }
-        self.easting = easting
-        self.northing = northing
-        self.zone = zone
-        self.hemisphere = hemisphere
-        
+
         let lon0 = centralMeridian(zone: Int(zone))
         let x = easting - UTMConstants.utmFalseEasting
         let y = hemisphere == .northern ? northing : northing - UTMConstants.utmNorthShift
         let reverseTM = StaticUTM.reverse(centralMeridian: lon0, x: x, y: y)
-        
-        self.convergence = reverseTM.convergence
-        self.centralScale = reverseTM.centralScale
-        self.geodeticCoordinate = reverseTM.coordinate
-        self.hemisphere = hemisphere
+
+        utmCoordinate = UTMCoordinate(zone: zone, hemisphere: hemisphere, easting: easting, northing: northing)
+        convergence = reverseTM.convergence
+        centralScale = reverseTM.centralScale
+        geodeticCoordinate = reverseTM.coordinate
     }
-    
+
     /// Init with latitude and longitude
     ///
     /// UTM eastings are allowed to be in the range [0km, 1000km], northings are
@@ -121,39 +122,38 @@ public struct UTM : MultiCoordinate {
     /// - Throws: `CoordinateError.northingOutOfBounds` **Southern Hemisphere** self.northing not in [900,000m, 19,600,000m], [1,000,000m, 19,500,000m] `mgrsLimits == true`
     /// - Throws:  `CoordinateError.illegalLatitude` if latitude not in -90&deg;... 90&deg;
     public init(latitude: Double, longitude: Double, zoneSpec: ZoneSpec = .utm, mgrsLimits: Bool = false) throws {
-        
+
         // This will throw if latitude is not legal
         let standardZone = try UTM.standardZone(latitude: latitude, longitude: longitude, zoneSpec: zoneSpec)
         let lon0 = centralMeridian(zone: Int(standardZone))
-        
+
         let forwardTM = StaticUTM.forward(centralMeridian: lon0, geodeticCoordinate: .init(latitude: latitude, longitude: longitude))
 
-        easting = forwardTM.x + UTMConstants.utmFalseEasting
-        northing = forwardTM.y + (latitude < 0 ? UTMConstants.utmNorthShift : 0)
+        let e = forwardTM.x + UTMConstants.utmFalseEasting
+        let n = forwardTM.y + (latitude < 0 ? UTMConstants.utmNorthShift : 0)
+        let h: Hemisphere = latitude >= 0 ? .northern : .southern
         let slop = mgrsLimits ? mgrsBuffer : 0
-        guard easting >= slop && easting <= UTMConstants.maximumUTMEasting - slop else {
-            throw CoordinateError.eastingOutOfBounds(easting: easting)
+
+        guard e >= slop && e <= UTMConstants.maximumUTMEasting - slop else {
+            throw CoordinateError.eastingOutOfBounds(easting: e)
         }
-        centralScale = forwardTM.centralScale
-        convergence = forwardTM.convergence
-        geodeticCoordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        hemisphere = latitude >= 0 ? .northern : .southern
-        zone = standardZone
-        if hemisphere == .northern {
-            guard northing >= UTMConstants.minimumNorthernUTMNorthing + slop else {
-                throw CoordinateError.northingOutOfBounds(northing: northing)
+        if h == .northern {
+            guard n >= UTMConstants.minimumNorthernUTMNorthing + slop else {
+                throw CoordinateError.northingOutOfBounds(northing: n)
             }
         } else {
-            guard northing >= UTMConstants.minimumSouthernUTMNorthing + slop &&
-                  northing <= UTMConstants.maximumSouthernUTMNorthing - slop else {
-                throw CoordinateError.northingOutOfBounds(northing: northing)
+            guard n >= UTMConstants.minimumSouthernUTMNorthing + slop &&
+                  n <= UTMConstants.maximumSouthernUTMNorthing - slop else {
+                throw CoordinateError.northingOutOfBounds(northing: n)
             }
         }
-        if easting < slop || easting > UTMConstants.maximumUTMEasting - slop {
-            throw CoordinateError.eastingOutOfBounds(easting: easting)
-        }
+
+        utmCoordinate = UTMCoordinate(zone: standardZone, hemisphere: h, easting: e, northing: n)
+        convergence = forwardTM.convergence
+        centralScale = forwardTM.centralScale
+        geodeticCoordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
-    
+
     /// The Standard Zone
     /// - Parameters:
     ///     - latitude: location Latitude
