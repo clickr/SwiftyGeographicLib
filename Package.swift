@@ -81,7 +81,7 @@ let package = Package(
         ),
         .target(
             name: "UTM",
-            dependencies: ["TransverseMercator", "TransverseMercatorStatic", "Math", "GeographicError", "UTMUPSProtocol", "Constants"]
+            dependencies: ["TransverseMercator", "StaticUTM", "Math", "GeographicError", "UTMUPSProtocol", "Constants"]
         ),
         .target(name: "SimpleGeographicLib",
                 cxxSettings: [

@@ -13,7 +13,7 @@ import GeographicError
 import UTMUPSProtocol
 import Constants
 import TransverseMercatorInternal
-import TransverseMercatorStatic
+import StaticUTM
 
 public struct UTM : MultiCoordinate {
     public var latitude: CLLocationDegrees { return geodeticCoordinate.latitude }
@@ -88,7 +88,7 @@ public struct UTM : MultiCoordinate {
         let lon0 = centralMeridian(zone: Int(zone))
         let x = easting - UTMConstants.utmFalseEasting
         let y = hemisphere == .northern ? northing : northing - UTMConstants.utmNorthShift
-        let reverseTM = InternalUTM.reverse(centralMeridian: lon0, x: x, y: y)
+        let reverseTM = StaticUTM.reverse(centralMeridian: lon0, x: x, y: y)
         
         self.convergence = reverseTM.convergence
         self.centralScale = reverseTM.centralScale
@@ -126,7 +126,7 @@ public struct UTM : MultiCoordinate {
         let standardZone = try UTM.standardZone(latitude: latitude, longitude: longitude, zoneSpec: zoneSpec)
         let lon0 = centralMeridian(zone: Int(standardZone))
         
-        let forwardTM = InternalUTM.forward(centralMeridian: lon0, latitude: latitude, longitude: longitude)
+        let forwardTM = StaticUTM.forward(centralMeridian: lon0, geodeticCoordinate: .init(latitude: latitude, longitude: longitude))
 
         easting = forwardTM.x + UTMConstants.utmFalseEasting
         northing = forwardTM.y + (latitude < 0 ? UTMConstants.utmNorthShift : 0)
