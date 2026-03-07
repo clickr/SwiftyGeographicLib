@@ -9,6 +9,7 @@ import XCTest
 @testable import TransverseMercator
 @testable import TransverseMercatorInternal
 @testable import TransverseMercatorStatic
+import StaticUTM
 import Math
 @testable import SimpleGeographicLib
 import CoreLocation

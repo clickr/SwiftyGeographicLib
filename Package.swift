@@ -28,6 +28,10 @@ let package = Package(
             name: "UPS",
             targets: ["UPS"]
         ),
+        .library(
+            name: "StaticUTM",
+            targets: ["StaticUTM"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.0")],
@@ -72,6 +76,10 @@ let package = Package(
             dependencies: ["Constants"],
         ),
         .target(
+            name: "StaticUTM",
+            dependencies: ["TransverseMercatorStatic"]
+        ),
+        .target(
             name: "UTM",
             dependencies: ["TransverseMercator", "TransverseMercatorStatic", "Math", "GeographicError", "UTMUPSProtocol", "Constants"]
         ),
@@ -112,6 +120,7 @@ let package = Package(
             name: "TransverseMercatorTests",
             dependencies: ["TransverseMercator",
                            "TransverseMercatorStatic",
+                           "StaticUTM",
                            "SimpleGeographicLib",
                            "Math",
                            "TransverseMercatorInternal",

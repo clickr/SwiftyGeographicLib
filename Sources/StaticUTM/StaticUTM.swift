@@ -7,9 +7,8 @@
 
 
 import Foundation
-import TransverseMercatorInternal
+import TransverseMercatorStatic
 import CoreLocation
-import Math
 
 public struct StaticUTM {
     /// Forward projection, from geographic to transverse Mercator.
