@@ -22,7 +22,7 @@ import Numerics
     let ypph : CLLocationCoordinate2D = .init(latitude: -31.93980, longitude: 115.96650)
     cppUTM.Forward(centralMeridian, ypph.latitude, ypph.longitude, &x, &y, &gamma, &k)
     let utm = TransverseMercator.UTM
-    let forward = utm.forward(centralMeridian: centralMeridian, coordinate2D: ypph)
+    let forward = utm.forward(centralMeridian: centralMeridian, geodeticCoordinate: ypph)
     #expect(forward.x.isApproximatelyEqual(to: x, absoluteTolerance: 1e-9))
     #expect(forward.y.isApproximatelyEqual(to: y, absoluteTolerance: 1e-9))
     #expect(forward.convergence.isApproximatelyEqual(to: gamma, absoluteTolerance: 1e-9))

@@ -11,8 +11,15 @@ import TransverseMercator
 import Math
 import GeographicError
 import UTMUPSProtocol
+import Constants
+import TransverseMercatorInternal
+import TransverseMercatorStatic
 
-public struct UTM : UTMUPSCoordinate {
+public struct UTM : MultiCoordinate {
+    public var latitude: CLLocationDegrees { return geodeticCoordinate.latitude }
+    
+    public var longitude: CLLocationDegrees { return geodeticCoordinate.longitude }
+    
     public var zone : Int32
     
     public var hemisphere: Hemisphere
@@ -25,7 +32,7 @@ public struct UTM : UTMUPSCoordinate {
     
     public var centralScale: Double
     
-    public var locationCoordinate2D: CLLocationCoordinate2D
+    public var geodeticCoordinate: CLLocationCoordinate2D
     
     /// Init with UTM Coordinates
     ///
@@ -58,16 +65,18 @@ public struct UTM : UTMUPSCoordinate {
             throw .invalidZone(zone: zone)
         }
         let slop = mgrsLimits ? mgrsBuffer : 0
-        guard easting >= slop && easting <= maximumUTMEasting - slop else {
+        guard easting >= slop && easting <= UTMConstants.maximumUTMEasting - slop else {
             throw .eastingOutOfBounds(easting: easting)
         }
         
         if hemisphere == .northern {
-            guard northing >= minimumNorthernUTMNorthing + slop && northing <= maximumNorthernUTMNorthing - slop else {
+            guard northing >= UTMConstants.minimumNorthernUTMNorthing + slop &&
+                  northing <= UTMConstants.maximumNorthernUTMNorthing - slop else {
                 throw .northingOutOfBounds(northing: northing)
             }
         } else {
-            guard northing >= minimumSouthernUTMNorthing + slop && northing <= maximumSouthernUTMNorthing - slop else {
+            guard northing >= UTMConstants.minimumSouthernUTMNorthing + slop &&
+                  northing <= UTMConstants.maximumSouthernUTMNorthing - slop else {
                 throw .northingOutOfBounds(northing: northing)
             }
         }
@@ -77,14 +86,14 @@ public struct UTM : UTMUPSCoordinate {
         self.hemisphere = hemisphere
         
         let lon0 = centralMeridian(zone: Int(zone))
-        let x = easting - utmFalseEasting
-        let y = hemisphere == .northern ? northing : northing - utmNorthShift
-        let reverseTM = TransverseMercator.UTM.reverse(centralMeridian: lon0, x: x, y: y)
+        let x = easting - UTMConstants.utmFalseEasting
+        let y = hemisphere == .northern ? northing : northing - UTMConstants.utmNorthShift
+        let reverseTM = InternalUTM.reverse(centralMeridian: lon0, x: x, y: y)
         
         self.convergence = reverseTM.convergence
         self.centralScale = reverseTM.centralScale
-        self.locationCoordinate2D
-        = reverseTM.coordinate
+        self.geodeticCoordinate = reverseTM.coordinate
+        self.hemisphere = hemisphere
     }
     
     /// Init with latitude and longitude
@@ -117,29 +126,30 @@ public struct UTM : UTMUPSCoordinate {
         let standardZone = try UTM.standardZone(latitude: latitude, longitude: longitude, zoneSpec: zoneSpec)
         let lon0 = centralMeridian(zone: Int(standardZone))
         
-        let forwardTM = TransverseMercator.UTM.forward(centralMeridian: lon0, latitude: latitude, longitude: longitude)
+        let forwardTM = InternalUTM.forward(centralMeridian: lon0, latitude: latitude, longitude: longitude)
 
-        easting = forwardTM.x + utmFalseEasting
-        northing = forwardTM.y + (latitude < 0 ? utmNorthShift : 0)
+        easting = forwardTM.x + UTMConstants.utmFalseEasting
+        northing = forwardTM.y + (latitude < 0 ? UTMConstants.utmNorthShift : 0)
         let slop = mgrsLimits ? mgrsBuffer : 0
-        guard easting >= slop && easting <= maximumUTMEasting - slop else {
+        guard easting >= slop && easting <= UTMConstants.maximumUTMEasting - slop else {
             throw CoordinateError.eastingOutOfBounds(easting: easting)
         }
         centralScale = forwardTM.centralScale
         convergence = forwardTM.convergence
-        locationCoordinate2D = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        geodeticCoordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         hemisphere = latitude >= 0 ? .northern : .southern
         zone = standardZone
         if hemisphere == .northern {
-            guard northing >= minimumNorthernUTMNorthing + slop else {
+            guard northing >= UTMConstants.minimumNorthernUTMNorthing + slop else {
                 throw CoordinateError.northingOutOfBounds(northing: northing)
             }
         } else {
-            guard northing >= minimumSouthernUTMNorthing + slop && northing <= maximumSouthernUTMNorthing - slop else {
+            guard northing >= UTMConstants.minimumSouthernUTMNorthing + slop &&
+                  northing <= UTMConstants.maximumSouthernUTMNorthing - slop else {
                 throw CoordinateError.northingOutOfBounds(northing: northing)
             }
         }
-        if easting < slop || easting > maximumUTMEasting - slop {
+        if easting < slop || easting > UTMConstants.maximumUTMEasting - slop {
             throw CoordinateError.eastingOutOfBounds(easting: easting)
         }
     }

@@ -11,6 +11,7 @@ import Testing
 import Numerics
 import CoreLocation
 import UTMUPSProtocol
+import Constants
 
 /// Tests the boundary between UTM and UPS for northern latitudes.
 ///
@@ -118,15 +119,15 @@ import UTMUPSProtocol
             northing: utm.northing
         )
         
-        #expect(roundTrip.locationCoordinate2D.latitude.isApproximatelyEqual(to: lat, absoluteTolerance: 1e-9))
-        #expect(roundTrip.locationCoordinate2D.longitude.isApproximatelyEqual(to: lon, absoluteTolerance: 1e-9))
+        #expect(roundTrip.geodeticCoordinate.latitude.isApproximatelyEqual(to: lat, absoluteTolerance: 1e-9))
+        #expect(roundTrip.geodeticCoordinate.longitude.isApproximatelyEqual(to: lon, absoluteTolerance: 1e-9))
     }
 }
 
 /// Tests that round-trip conversion maintains accuracy for UPS.
 @Test func testUPSRoundTrip() throws {
     // Test multiple points in polar regions
-    let testPoints: [(Double, Double, UTMUPSProtocol.Hemisphere)] = [
+    let testPoints: [(Double, Double, Hemisphere)] = [
         (85.0, 0.0, .northern),
         (89.0, 90.0, .northern),
         (-85.0, 0.0, .southern),
@@ -139,7 +140,7 @@ import UTMUPSProtocol
         
         let roundTrip = try UPS(hemisphere: ups.hemisphere, easting: ups.easting, northing: ups.northing)
         
-        #expect(roundTrip.locationCoordinate2D.latitude.isApproximatelyEqual(to: lat, absoluteTolerance: 1e-9))
-        #expect(roundTrip.locationCoordinate2D.longitude.isApproximatelyEqual(to: lon, absoluteTolerance: 1e-9))
+        #expect(roundTrip.geodeticCoordinate.latitude.isApproximatelyEqual(to: lat, absoluteTolerance: 1e-9))
+        #expect(roundTrip.geodeticCoordinate.longitude.isApproximatelyEqual(to: lon, absoluteTolerance: 1e-9))
     }
 }

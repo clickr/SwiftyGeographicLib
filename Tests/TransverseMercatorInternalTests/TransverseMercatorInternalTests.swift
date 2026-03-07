@@ -14,15 +14,7 @@ let utm = GeographicLib.TransverseMercator.UTM().pointee
 
 @Test func initUTM() {
     let internalUTM = computeInternlTransverseMercator(flattening: utm.Flattening(), equatorialRadius: utm.EquatorialRadius())
-//    n: Double,
-//    a1: Double,
-//    b1: Double,
-//    c: Double,
-//    e2: Double,
-//    e2m: Double,
-//    es: Double,
-//    alp: [Double],
-//    bet: [Double]
+
     #expect(internalUTM.n == utm._n)
     #expect(internalUTM.a1 == utm._a1)
     #expect(internalUTM.b1 == utm._b1)

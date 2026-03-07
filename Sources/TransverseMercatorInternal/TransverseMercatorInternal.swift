@@ -8,51 +8,11 @@
 import Foundation
 import Math
 
-//
-//func eatanhe(_ x: Double, _ e: Double) -> Double {
-//    if e > 0 {
-//        return e * atanh(e * x)
-//    } else {
-//        return -e * atan(e * x)
-//    }
-//}
-//
-//func angDiff(_ lon0: Double, _ lon: Double) -> Double {
-//    var d = (lon - lon0).truncatingRemainder(dividingBy: 360)
-//    while d > 180 { d -= 360 }
-//    while d < -180 { d += 360 }
-//    return d
-//}
-//
-//
-///// Normalize a latitude
-///// - Return x if in range [-90...90] else .nan
-//func latFix(_ lat: Double) -> Double {
-//    guard lat >= -90 && lat <= 90 else {
-//        return .nan
-//    }
-//    return lat
-//}
-
-/// Calculate a polynomial
-///
-/// Uses Horner's method as referenced
-/// [Rosetta Code](https://rosettacode.org/wiki/Horner%27s_rule_for_polynomial_evaluation#Swift)
-/// except coefficients are for increasing powers of x and the final term is ignored (intended to be used in further calculations)
-///
-@available(macOS 10.15, *)
-public func polyValue(withCoefficients coefficients: [Double], at x: Double) -> Double {
-    guard coefficients.count > 0 else { return 0 }
-    return coefficients.dropLast().reduce(0) {
-        return ($0 * x + $1)
-    }
-}
-
-public func computeB1(x: Double) -> Double {
+internal func computeB1(x: Double) -> Double {
     let betaCoeffs : [Double] = [1, 4, 64, 256, 256,]
     return polyValue(withCoefficients: betaCoeffs, at: x * x) / (256.0 * (1.0 + x))
 }
-public func computeAlp(x: Double) -> [Double] {
+internal func computeAlp(x: Double) -> [Double] {
     var _x = x
     var res : [Double] = Array(repeating: 0, count: 7)
     let alphaCoeffs : [[Double]] = [
@@ -76,7 +36,7 @@ public func computeAlp(x: Double) -> [Double] {
     return res
 }
 
-public func computeBet(x: Double) -> [Double] {
+internal func computeBet(x: Double) -> [Double] {
     var _x = x
     var res : [Double] = Array(repeating: 0, count: 7)
     let betaCoeffs : [[Double]] = [

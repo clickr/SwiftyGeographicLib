@@ -4,13 +4,29 @@
 import PackageDescription
 
 let package = Package(
-    name: "GeographicLibDev",
-    platforms: [.macOS(.v15)],
+    name: "SwiftGeoLib",
+    platforms: [.macOS(.v15), .iOS(.v17)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "TransverseMercator",
             targets: ["TransverseMercator"]
+        ),
+        .library(
+            name: "TransverseMercatorStatic",
+            targets: ["TransverseMercatorStatic"]
+        ),
+        .library(
+            name: "UTM",
+            targets: ["UTM"]
+            ),
+        .library(
+            name: "PolarStereographic",
+            targets: ["PolarStereographic"]
+        ),
+        .library(
+            name: "UPS",
+            targets: ["UPS"]
         ),
     ],
     dependencies: [
@@ -18,6 +34,9 @@ let package = Package(
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
+        .target(
+            name: "Constants"
+        ),
         .target(
             name: "GeographicError"
         ),
@@ -31,7 +50,11 @@ let package = Package(
         ),
         .target(
             name: "TransverseMercatorInternal",
-            dependencies: ["Math"]
+            dependencies: ["Math", .product(name: "ComplexModule", package: "swift-numerics")]
+        ),
+        .target(
+            name: "TransverseMercatorStatic",
+            dependencies: ["Math", "TransverseMercatorInternal", .product(name: "ComplexModule", package: "swift-numerics")]
         ),
         .target(
             name: "TransverseMercator",
@@ -42,11 +65,15 @@ let package = Package(
         ),
         .target(
             name: "UPS",
-            dependencies: ["PolarStereographic", "Math", "GeographicError", "UTMUPSProtocol"]
+            dependencies: ["PolarStereographic", "Math", "GeographicError", "UTMUPSProtocol", "Constants"]
+        ),
+        .target(
+            name: "UTMUPSProtocol",
+            dependencies: ["Constants"],
         ),
         .target(
             name: "UTM",
-            dependencies: ["TransverseMercator", "Math", "GeographicError", "UTMUPSProtocol"]
+            dependencies: ["TransverseMercator", "TransverseMercatorStatic", "Math", "GeographicError", "UTMUPSProtocol", "Constants"]
         ),
         .target(name: "SimpleGeographicLib",
                 cxxSettings: [
@@ -62,9 +89,6 @@ let package = Package(
                     .define("GEOGRAPHICLIB_SHARED_LIB", to: "0")]),
         .target(
             name: "Math"
-        ),
-        .target(
-            name: "UTMUPSProtocol"
         ),
         .testTarget(
             name: "MathTests",
@@ -87,8 +111,10 @@ let package = Package(
         .testTarget(
             name: "TransverseMercatorTests",
             dependencies: ["TransverseMercator",
+                           "TransverseMercatorStatic",
                            "SimpleGeographicLib",
                            "Math",
+                           "TransverseMercatorInternal",
                            .product(name: "Numerics", package: "swift-numerics")],
             swiftSettings: [.interoperabilityMode(.Cxx)]
         ),
@@ -99,16 +125,27 @@ let package = Package(
         ),
         .testTarget(
             name: "UTMTests",
-            dependencies: ["UTM", .product(name: "Numerics", package: "swift-numerics")]
+            dependencies: [
+                "UTM",
+                "Constants",
+                .product(name: "Numerics", package: "swift-numerics")]
         ),
         .testTarget(
             name: "UPSTests",
-            dependencies: ["UPS", "SimpleGeographicLib", .product(name: "Numerics", package: "swift-numerics")],
+            dependencies: [
+                "UPS",
+                "SimpleGeographicLib",
+                "Constants",
+                .product(name: "Numerics", package: "swift-numerics")],
             swiftSettings: [.interoperabilityMode(.Cxx)]
         ),
         .testTarget(
             name: "UTMUPSTests",
-            dependencies: ["UTM", "UPS", .product(name: "Numerics", package: "swift-numerics")]
+            dependencies: [
+                "UTM",
+                "UPS",
+                "Constants",
+                .product(name: "Numerics", package: "swift-numerics")]
         )
     ],
     cxxLanguageStandard: .cxx20

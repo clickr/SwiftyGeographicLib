@@ -67,8 +67,8 @@ import UTMUPSProtocol
 //    echo 38n 444140.54 3684706.36 | GeoConvert -p 9
 //    33.30000003988349 44.39999994689769
     let utm1 = try UTM(hemisphere: .northern, zone: 38, easting: 444140.54, northing: 3684706.36)
-    #expect(utm1.locationCoordinate2D.latitude.isApproximatelyEqual(to: 33.30000003988349, absoluteTolerance: 1e-9))
-    #expect(utm1.locationCoordinate2D.longitude.isApproximatelyEqual(to: 44.39999994689769, absoluteTolerance: 1e-9))
+    #expect(utm1.geodeticCoordinate.latitude.isApproximatelyEqual(to: 33.30000003988349, absoluteTolerance: 1e-9))
+    #expect(utm1.geodeticCoordinate.longitude.isApproximatelyEqual(to: 44.39999994689769, absoluteTolerance: 1e-9))
     #expect(utm1.convergence.isApproximatelyEqual(to: -0.3294222515151, absoluteTolerance: 1e-9))
     #expect(utm1.centralScale.isApproximatelyEqual(to: 0.999638469353107, absoluteTolerance: 1e-9))
 
@@ -77,8 +77,8 @@ import UTMUPSProtocol
 //    -31.94028962404897 115.96694602276638
     let utmS = try UTM(hemisphere: .southern, zone: 50, easting: 402357, northing: 6465717)
 
-    let latS = utmS.locationCoordinate2D.latitude
-    let lonS = utmS.locationCoordinate2D.longitude
+    let latS = utmS.geodeticCoordinate.latitude
+    let lonS = utmS.geodeticCoordinate.longitude
 
     #expect(latS.isApproximatelyEqual(to: -31.94028962404897, absoluteTolerance: 1e-9))
     #expect(lonS.isApproximatelyEqual(to: 115.96694602276638, absoluteTolerance: 1e-9))

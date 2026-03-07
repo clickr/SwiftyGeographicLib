@@ -10,6 +10,7 @@ import UTMUPSProtocol
 import CoreLocation
 import PolarStereographic
 import GeographicError
+import Constants
 
 /// Universal Polar Screen (UPS) coordinate representation.
 ///
@@ -34,9 +35,9 @@ import GeographicError
 /// - Note: UPS coordinates include a false easting and false northing of 2,000,000 meters
 ///   to avoid negative coordinates. These must be subtracted to get the actual
 ///   polar stereographic coordinates.
-public struct UPS : UTMUPSCoordinate {
+public struct UPS : MultiCoordinate {
     /// The hemisphere (northern or southern) of the coordinate.
-    public var hemisphere: UTMUPSProtocol.Hemisphere
+    public var hemisphere: Hemisphere
     
     /// The easting coordinate in meters.
     ///
@@ -57,7 +58,7 @@ public struct UPS : UTMUPSCoordinate {
     public var centralScale: Double
     
     /// The geographic coordinate (latitude and longitude) represented by this UPS coordinate.
-    public var locationCoordinate2D: CLLocationCoordinate2D
+    public var geodeticCoordinate: CLLocationCoordinate2D
     
     /// Creates a UPS coordinate from a latitude and longitude.
     ///
@@ -84,7 +85,7 @@ public struct UPS : UTMUPSCoordinate {
         self.northing = forward.y + 20e5
         self.convergence = forward.convergence
         self.centralScale = forward.centralScale
-        self.locationCoordinate2D = .init(latitude: latitude, longitude: longitude)
+        self.geodeticCoordinate = .init(latitude: latitude, longitude: longitude)
         self.hemisphere = forward.northp ? .northern : .southern
     }
     
@@ -101,17 +102,21 @@ public struct UPS : UTMUPSCoordinate {
     /// - Throws: `CoordinateError` if the easting or northing are outside valid bounds.
     public init(hemisphere: Hemisphere, easting: Double, northing: Double) throws {
         if hemisphere == .northern {
-            guard easting >= minUPSNorthernCoordinate && easting <= maxUPSNorthernCoordinate else {
+            guard easting >= UPSConstants.minUPSNorthernCoordinate &&
+                    easting <= UPSConstants.maxUPSNorthernCoordinate else {
                 throw CoordinateError.eastingOutOfBounds(easting: easting)
             }
-            guard northing >= minUPSNorthernCoordinate && northing <= maxUPSNorthernCoordinate else {
+            guard northing >= UPSConstants.minUPSNorthernCoordinate &&
+                    northing <= UPSConstants.maxUPSNorthernCoordinate else {
                 throw CoordinateError.northingOutOfBounds(northing: northing)
             }
         } else {
-            guard easting >= minUPSSouthernCoordinate && easting <= maxUPSSouthernCoordinate else {
+            guard easting >= UPSConstants.minUPSSouthernCoordinate &&
+                    easting <= UPSConstants.maxUPSSouthernCoordinate else {
                 throw CoordinateError.eastingOutOfBounds(easting: easting)
             }
-            guard northing >= minUPSSouthernCoordinate && northing <= maxUPSSouthernCoordinate else {
+            guard northing >= UPSConstants.minUPSSouthernCoordinate &&
+                    northing <= UPSConstants.maxUPSSouthernCoordinate else {
                 throw CoordinateError.northingOutOfBounds(northing: northing)
             }
         }
@@ -122,13 +127,13 @@ public struct UPS : UTMUPSCoordinate {
                                                      x: easting - 20e5,
                                                      y: northing - 20e5)
         
-        self.locationCoordinate2D = .init(latitude: reverse.coordinate.latitude, longitude: reverse.coordinate.longitude)
+        self.geodeticCoordinate = .init(latitude: reverse.coordinate.latitude, longitude: reverse.coordinate.longitude)
         self.centralScale = reverse.centralScale
         self.convergence = reverse.convergence
     }
     /// The latitude in degrees.
-    public var latitude : Double { locationCoordinate2D.latitude }
+    public var latitude : CLLocationDegrees { return geodeticCoordinate.latitude }
     
     /// The longitude in degrees.
-    public var longitude : Double { locationCoordinate2D.longitude }
+    public var longitude : CLLocationDegrees { return geodeticCoordinate.longitude }
 }
