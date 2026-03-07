@@ -74,27 +74,48 @@ public struct MagneticModel: Sendable {
     /// - Parameter name: The model name (e.g. "wmm2025", "igrf14", "emm2017").
     /// - Throws: ``MagneticModelError`` if the model data cannot be loaded.
     public init(name: String) throws(MagneticModelError) {
-        try self.init(name: name, earth: .wgs84)
-    }
-
-    /// Load a magnetic model with a custom ellipsoid.
-    ///
-    /// - Parameters:
-    ///   - name: The model name.
-    ///   - earth: The Geocentric ellipsoid to use.
-    /// - Throws: ``MagneticModelError`` if the model data cannot be loaded.
-    init(name: String, earth: Geocentric) throws(MagneticModelError) {
-        self._earth = earth
-
-        // Locate the metadata file in the bundle.
         guard let metaURL = Bundle.module.url(
             forResource: name, withExtension: "wmm")
         else {
             throw .fileNotFound("\(name).wmm not found in bundle")
         }
+        guard let cofURL = Bundle.module.url(
+            forResource: "\(name).wmm", withExtension: "cof")
+        else {
+            throw .fileNotFound("\(name).wmm.cof not found in bundle")
+        }
+        try self.init(metadataURL: metaURL, coefficientsURL: cofURL, earth: .wgs84)
+    }
+
+    /// Load a magnetic model from a directory on disk.
+    ///
+    /// The directory must contain both `<name>.wmm` (metadata) and
+    /// `<name>.wmm.cof` (binary coefficients) files.
+    ///
+    /// - Parameters:
+    ///   - name: The model name (e.g. "wmm2025").
+    ///   - directory: URL of the directory containing the model files.
+    /// - Throws: ``MagneticModelError`` if the model data cannot be loaded.
+    public init(name: String, directory: URL) throws(MagneticModelError) {
+        let metaURL = directory.appendingPathComponent("\(name).wmm")
+        let cofURL = directory.appendingPathComponent("\(name).wmm.cof")
+        try self.init(metadataURL: metaURL, coefficientsURL: cofURL, earth: .wgs84)
+    }
+
+    /// Load a magnetic model from explicit file URLs.
+    ///
+    /// - Parameters:
+    ///   - metadataURL: URL of the `.wmm` metadata file.
+    ///   - coefficientsURL: URL of the `.wmm.cof` binary coefficient file.
+    ///   - earth: The Geocentric ellipsoid to use.
+    /// - Throws: ``MagneticModelError`` if the model data cannot be loaded.
+    init(metadataURL: URL, coefficientsURL: URL,
+         earth: Geocentric) throws(MagneticModelError)
+    {
+        self._earth = earth
 
         // Parse metadata.
-        let meta = try Self.readMetadata(url: metaURL)
+        let meta = try Self.readMetadata(url: metadataURL)
 
         self.name = meta.name
         self.modelDescription = meta.description
@@ -109,19 +130,12 @@ public struct MagneticModel: Sendable {
         self._nNmodels = meta.nNmodels
         self._nNconstants = meta.nNconstants
 
-        // Locate the coefficient file.
-        guard let cofURL = Bundle.module.url(
-            forResource: "\(name).wmm", withExtension: "cof")
-        else {
-            throw .fileNotFound("\(name).wmm.cof not found in bundle")
-        }
-
         // Load binary coefficients.
         let cofData: Data
         do {
-            cofData = try Data(contentsOf: cofURL)
+            cofData = try Data(contentsOf: coefficientsURL)
         } catch {
-            throw .fileNotFound("Cannot read \(cofURL.path)")
+            throw .fileNotFound("Cannot read \(coefficientsURL.path)")
         }
 
         // Verify ID header.

@@ -245,6 +245,32 @@ import Numerics
     #expect(model.order == 12)
 }
 
+/// Test loading a model from a directory URL produces the same results.
+@Test func testLoadFromDirectory() throws {
+    let bundleModel = try MagneticModel(name: "wmm2025")
+
+    // Find the resource directory via Bundle.module
+    let metaURL = Bundle.module.url(forResource: "wmm2025", withExtension: "wmm")!
+    let directory = metaURL.deletingLastPathComponent()
+
+    let dirModel = try MagneticModel(name: "wmm2025", directory: directory)
+
+    // Metadata should match
+    #expect(dirModel.name == bundleModel.name)
+    #expect(dirModel.epoch == bundleModel.epoch)
+    #expect(dirModel.degree == bundleModel.degree)
+
+    // Field evaluation should be identical
+    let bundleField = bundleModel.field(
+        time: 2026.0, latitude: 47.6, longitude: -122.3, height: 0)
+    let dirField = dirModel.field(
+        time: 2026.0, latitude: 47.6, longitude: -122.3, height: 0)
+
+    #expect(bundleField.Bx == dirField.Bx)
+    #expect(bundleField.By == dirField.By)
+    #expect(bundleField.Bz == dirField.Bz)
+}
+
 /// Test Date-based API produces the same results as fractional year API.
 @Test func testFieldWithDate() throws {
     let model = try MagneticModel(name: "wmm2025")
