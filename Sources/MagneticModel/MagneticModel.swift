@@ -7,4 +7,4 @@
 
 import Foundation
 
-// TODO: Implement MagneticModel and its dependant libraries and test against the c++ implementation in SimpleGeographicLib
+// TODO: Implement MagneticModel and its dependant libraries in pure swift and test against the c++ implementation in SimpleGeographicLib
