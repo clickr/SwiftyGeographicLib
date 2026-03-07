@@ -111,38 +111,38 @@ import Numerics
 
     // Reference values from C++ GeographicLib::MagneticModel
     let testCases: [(t: Double, lat: Double, lon: Double, h: Double,
-                     Bx: Double, By: Double, Bz: Double,
-                     Bxt: Double, Byt: Double, Bzt: Double)] = [
+                     east: Double, north: Double, up: Double,
+                     eastDeltaT: Double, northDeltaT: Double, upDeltaT: Double)] = [
         (t: 2025.0, lat: 0.0, lon: 0.0, h: 0,
-         Bx: -1.927587354608948e+03, By: 2.745392868141750e+04, Bz: 1.601080696334261e+04,
-         Bxt: 6.076504047819352e+01, Byt: -2.040555998789081e+01, Bzt: -1.105387923080829e+01),
+         east: -1.927587354608948e+03, north: 2.745392868141750e+04, up: 1.601080696334261e+04,
+         eastDeltaT: 6.076504047819352e+01, northDeltaT: -2.040555998789081e+01, upDeltaT: -1.105387923080829e+01),
         (t: 2025.0, lat: 80.0, lon: 0.0, h: 0,
-         Bx: 1.458869564421783e+02, By: 6.521599441280421e+03, Bz: -5.479150766224908e+04,
-         Bxt: 5.945875281989447e+01, Byt: -8.309568725114923e+00, Bzt: -3.113911470514087e+01),
+         east: 1.458869564421783e+02, north: 6.521599441280421e+03, up: -5.479150766224908e+04,
+         eastDeltaT: 5.945875281989447e+01, northDeltaT: -8.309568725114923e+00, upDeltaT: -3.113911470514087e+01),
         (t: 2025.0, lat: -80.0, lon: 0.0, h: 0,
-         Bx: -7.698864892197286e+03, By: 1.753941111434700e+04, Bz: 4.194761420895920e+04,
-         Bxt: -3.004720937170342e+01, Byt: -2.090601119141013e+01, Bzt: -5.467564453525574e+01),
+         east: -7.698864892197286e+03, north: 1.753941111434700e+04, up: 4.194761420895920e+04,
+         eastDeltaT: -3.004720937170342e+01, northDeltaT: -2.090601119141013e+01, upDeltaT: -5.467564453525574e+01),
         (t: 2025.0, lat: 0.0, lon: 120.0, h: 0,
-         Bx: -1.096063048178227e+02, By: 3.967775500236646e+04, Bz: 1.058016983197216e+04,
-         Bxt: -2.310511808879683e+01, Byt: 9.544059592625468e+00, Bzt: -7.935408743674856e+01),
+         east: -1.096063048178227e+02, north: 3.967775500236646e+04, up: 1.058016983197216e+04,
+         eastDeltaT: -2.310511808879683e+01, northDeltaT: 9.544059592625468e+00, upDeltaT: -7.935408743674856e+01),
         (t: 2025.0, lat: 0.0, lon: -120.0, h: 0,
-         Bx: 4.321402338270267e+03, By: 2.946717242392872e+04, Bz: -5.463577594777380e+03,
-         Bxt: -2.068689008557411e+01, Byt: -5.458371453070067e+01, Bzt: -1.148492856486349e+01),
+         east: 4.321402338270267e+03, north: 2.946717242392872e+04, up: -5.463577594777380e+03,
+         eastDeltaT: -2.068689008557411e+01, northDeltaT: -5.458371453070067e+01, upDeltaT: -1.148492856486349e+01),
         (t: 2025.0, lat: 47.6, lon: -122.3, h: 0,
-         Bx: 4.962391401515922e+03, By: 1.841296057855617e+04, Bz: -4.922788914228979e+04,
-         Bxt: -4.070140784765751e+01, Byt: 6.846956909564785e+00, Bzt: 1.165230773085122e+02),
+         east: 4.962391401515922e+03, north: 1.841296057855617e+04, up: -4.922788914228979e+04,
+         eastDeltaT: -4.070140784765751e+01, northDeltaT: 6.846956909564785e+00, upDeltaT: 1.165230773085122e+02),
         (t: 2025.0, lat: -33.86, lon: 151.2, h: 0,
-         Bx: 5.452699487891261e+03, By: 2.403579237454800e+04, Bz: 5.139925049605334e+04,
-         Bxt: 6.782903793140191e+00, Byt: -1.175383930259874e+01, Bzt: -1.409437535501833e+01),
+         east: 5.452699487891261e+03, north: 2.403579237454800e+04, up: 5.139925049605334e+04,
+         eastDeltaT: 6.782903793140191e+00, northDeltaT: -1.175383930259874e+01, upDeltaT: -1.409437535501833e+01),
         (t: 2027.5, lat: 47.6, lon: -122.3, h: 1000,
-         Bx: 4.857101890591575e+03, By: 1.842095652585176e+04, Bz: -4.891274925362800e+04,
-         Bxt: -4.067940806214763e+01, Byt: 6.846569234698812e+00, Bzt: 1.164416960065976e+02),
+         east: 4.857101890591575e+03, north: 1.842095652585176e+04, up: -4.891274925362800e+04,
+         eastDeltaT: -4.067940806214763e+01, northDeltaT: 6.846569234698812e+00, upDeltaT: 1.164416960065976e+02),
         (t: 2025.5, lat: 0.0, lon: 0.0, h: 100000,
-         Bx: -1.846334679390044e+03, By: 2.609114560452784e+04, Bz: 1.476131548503081e+04,
-         Bxt: 5.743569152661379e+01, Byt: -1.920058373357018e+01, Bzt: -1.050806766323698e+01),
+         east: -1.846334679390044e+03, north: 2.609114560452784e+04, up: 1.476131548503081e+04,
+         eastDeltaT: 5.743569152661379e+01, northDeltaT: -1.920058373357018e+01, upDeltaT: -1.050806766323698e+01),
         (t: 2029.0, lat: 45.0, lon: 45.0, h: 50000,
-         Bx: 3.101610206619124e+03, By: 2.177627579309874e+04, Bz: -4.521177868524045e+04,
-         Bxt: 1.281049337550344e+01, Byt: 8.933638827725639e+00, Bzt: -5.992680344119984e+01),
+         east: 3.101610206619124e+03, north: 2.177627579309874e+04, up: -4.521177868524045e+04,
+         eastDeltaT: 1.281049337550344e+01, northDeltaT: 8.933638827725639e+00, upDeltaT: -5.992680344119984e+01),
     ]
 
     for tc in testCases {
@@ -152,29 +152,29 @@ import Numerics
 
         let tol = 1e-6 // nanotesla tolerance
 
-        #expect(result.field.Bx.isApproximatelyEqual(to: tc.Bx, absoluteTolerance: tol),
-                "Bx mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
-        #expect(result.field.By.isApproximatelyEqual(to: tc.By, absoluteTolerance: tol),
-                "By mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
-        #expect(result.field.Bz.isApproximatelyEqual(to: tc.Bz, absoluteTolerance: tol),
-                "Bz mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
-        #expect(result.Bxt.isApproximatelyEqual(to: tc.Bxt, absoluteTolerance: tol),
-                "Bxt mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
-        #expect(result.Byt.isApproximatelyEqual(to: tc.Byt, absoluteTolerance: tol),
-                "Byt mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
-        #expect(result.Bzt.isApproximatelyEqual(to: tc.Bzt, absoluteTolerance: tol),
-                "Bzt mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
+        #expect(result.field.east.isApproximatelyEqual(to: tc.east, absoluteTolerance: tol),
+                "east mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
+        #expect(result.field.north.isApproximatelyEqual(to: tc.north, absoluteTolerance: tol),
+                "north mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
+        #expect(result.field.up.isApproximatelyEqual(to: tc.up, absoluteTolerance: tol),
+                "up mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
+        #expect(result.eastDeltaT.isApproximatelyEqual(to: tc.eastDeltaT, absoluteTolerance: tol),
+                "eastDeltaT mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
+        #expect(result.northDeltaT.isApproximatelyEqual(to: tc.northDeltaT, absoluteTolerance: tol),
+                "northDeltaT mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
+        #expect(result.upDeltaT.isApproximatelyEqual(to: tc.upDeltaT, absoluteTolerance: tol),
+                "upDeltaT mismatch at t=\(tc.t), lat=\(tc.lat), lon=\(tc.lon)")
     }
 }
 
 /// Test FieldComponents static utility.
 @Test func testFieldComponents() throws {
     // Reference from C++ GeographicLib::MagneticModel::FieldComponents
-    let Bx = 1234.5
-    let By = 20000.0
-    let Bz = -40000.0
+    let east = 1234.5
+    let north = 20000.0
+    let up = -40000.0
 
-    let comp = MagneticModel.fieldComponents(Bx: Bx, By: By, Bz: Bz)
+    let comp = MagneticModel.fieldComponents(east: east, north: north, up: up)
 
     #expect(comp.horizontalFieldIntensity.isApproximatelyEqual(to: 2.003806353543176e+04, absoluteTolerance: 1e-6))
     #expect(comp.totalFieldIntensity.isApproximatelyEqual(to: 4.473839503435500e+04, absoluteTolerance: 1e-6))
@@ -185,12 +185,12 @@ import Numerics
 /// Test FieldComponentsWithRates static utility.
 @Test func testFieldComponentsWithRates() throws {
     // Reference from C++ GeographicLib::MagneticModel::FieldComponents
-    let Bx = 1234.5, By = 20000.0, Bz = -40000.0
-    let Bxt = 10.0, Byt = -5.0, Bzt = 3.0
+    let east = 1234.5, north = 20000.0, up = -40000.0
+    let eastDt = 10.0, northDt = -5.0, upDt = 3.0
 
     let comp = MagneticModel.fieldComponentsWithRates(
-        Bx: Bx, By: By, Bz: Bz,
-        Bxt: Bxt, Byt: Byt, Bzt: Bzt)
+        east: east, north: north, up: up,
+        eastDeltaT: eastDt, northDeltaT: northDt, upDeltaT: upDt)
 
     #expect(comp.horizontalFieldIntensity.isApproximatelyEqual(to: 2.003806353543176e+04, absoluteTolerance: 1e-6))
     #expect(comp.F.isApproximatelyEqual(to: 4.473839503435500e+04, absoluteTolerance: 1e-6))
@@ -211,15 +211,15 @@ import Numerics
         time: 2026.0, latitude: 47.6, longitude: -122.3, height: 0)
 
     let comp = MagneticModel.fieldComponentsWithRates(
-        Bx: result.field.Bx, By: result.field.By, Bz: result.field.Bz,
-        Bxt: result.Bxt, Byt: result.Byt, Bzt: result.Bzt)
+        east: result.field.east, north: result.field.north, up: result.field.up,
+        eastDeltaT: result.eastDeltaT, northDeltaT: result.northDeltaT, upDeltaT: result.upDeltaT)
 
     // Reference from C++ GeographicLib full pipeline
-    #expect(result.field.Bx.isApproximatelyEqual(
+    #expect(result.field.east.isApproximatelyEqual(
         to: 4.921689993668267e+03, absoluteTolerance: 1e-6))
-    #expect(result.field.By.isApproximatelyEqual(
+    #expect(result.field.north.isApproximatelyEqual(
         to: 1.841980753546573e+04, absoluteTolerance: 1e-6))
-    #expect(result.field.Bz.isApproximatelyEqual(
+    #expect(result.field.up.isApproximatelyEqual(
         to: -4.911136606498128e+04, absoluteTolerance: 1e-6))
 
     #expect(comp.horizontalFieldIntensity.isApproximatelyEqual(
@@ -266,9 +266,9 @@ import Numerics
     let dirField = dirModel.field(
         time: 2026.0, latitude: 47.6, longitude: -122.3, height: 0)
 
-    #expect(bundleField.Bx == dirField.Bx)
-    #expect(bundleField.By == dirField.By)
-    #expect(bundleField.Bz == dirField.Bz)
+    #expect(bundleField.east == dirField.east)
+    #expect(bundleField.north == dirField.north)
+    #expect(bundleField.up == dirField.up)
 }
 
 /// Test Date-based API produces the same results as fractional year API.
@@ -291,9 +291,9 @@ import Numerics
     let timeResult = model.field(
         time: fractional, latitude: 47.6, longitude: -122.3, height: 0)
 
-    #expect(dateResult.Bx == timeResult.Bx)
-    #expect(dateResult.By == timeResult.By)
-    #expect(dateResult.Bz == timeResult.Bz)
+    #expect(dateResult.east == timeResult.east)
+    #expect(dateResult.north == timeResult.north)
+    #expect(dateResult.up == timeResult.up)
 
     // fieldWithRates(date:) should match fieldWithRates(time:)
     let dateRates = model.fieldWithRates(
@@ -301,8 +301,8 @@ import Numerics
     let timeRates = model.fieldWithRates(
         time: fractional, latitude: 47.6, longitude: -122.3, height: 0)
 
-    #expect(dateRates.field.Bx == timeRates.field.Bx)
-    #expect(dateRates.Bxt == timeRates.Bxt)
+    #expect(dateRates.field.east == timeRates.field.east)
+    #expect(dateRates.eastDeltaT == timeRates.eastDeltaT)
 }
 
 /// Test fractionalYear handles leap years correctly.
@@ -346,8 +346,8 @@ import Numerics
         let field = model.field(
             time: 2025, latitude: pos.lat,
             longitude: pos.lon, height: 0)
-        #expect(field.Bx.isFinite, "Bx not finite at \(pos)")
-        #expect(field.By.isFinite, "By not finite at \(pos)")
-        #expect(field.Bz.isFinite, "Bz not finite at \(pos)")
+        #expect(field.east.isFinite, "east not finite at \(pos)")
+        #expect(field.north.isFinite, "north not finite at \(pos)")
+        #expect(field.up.isFinite, "up not finite at \(pos)")
     }
 }

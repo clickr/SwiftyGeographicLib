@@ -12,9 +12,9 @@ import Math
 /// The three-component magnetic field vector in the local (east, north, up) basis.
 public struct MagneticField: Sendable {
     /// Easterly component of the magnetic field (nanotesla).
-    public let Bx: Double
+    public let east: Double
     /// Northerly component of the magnetic field (nanotesla).
-    public let By: Double
+    public let north: Double
     /// Vertical (up) component of the magnetic field (nanotesla).
-    public let Bz: Double
+    public let up: Double
 }

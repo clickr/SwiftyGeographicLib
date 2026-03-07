@@ -22,7 +22,7 @@ import Math
 /// ```swift
 /// let model = try MagneticModel(name: "wmm2025")
 /// let result = model.field(time: 2026.2, latitude: 47.6, longitude: -122.3, height: 0)
-/// print("Declination: \(MagneticModel.fieldComponents(Bx: result.Bx, By: result.By, Bz: result.Bz).D)°")
+/// print("Declination: \(MagneticModel.fieldComponents(east: result.east, north: result.north, up: result.up).D)°")
 /// ```
 public struct MagneticModel: Sendable {
 
@@ -274,15 +274,16 @@ public struct MagneticModel: Sendable {
     /// Compute derived field components from the field vector.
     ///
     /// - Parameters:
-    ///   - Bx: Easterly component (nT).
-    ///   - By: Northerly component (nT).
-    ///   - Bz: Vertical (up) component (nT).
+    ///   - east: Easterly component (nT).
+    ///   - north: Northerly component (nT).
+    ///   - up: Vertical (up) component (nT).
     /// - Returns: H (horizontal), F (total), D (declination), I (inclination).
-    public static func fieldComponents(Bx: Double, By: Double, Bz: Double)
+    public static func fieldComponents(east: Double, north: Double, up: Double)
         -> MagneticFieldComponents
     {
         let full = fieldComponentsWithRates(
-            Bx: Bx, By: By, Bz: Bz, Bxt: 0, Byt: 1, Bzt: 0)
+            east: east, north: north, up: up,
+            eastDeltaT: 0, northDeltaT: 1, upDeltaT: 0)
         return MagneticFieldComponents(
             horizontalFieldIntensity: full.horizontalFieldIntensity, totalFieldIntensity: full.F, declination: full.D, inclination: full.I)
     }
@@ -290,37 +291,37 @@ public struct MagneticModel: Sendable {
     /// Compute derived field components with time derivatives.
     ///
     /// - Parameters:
-    ///   - Bx: Easterly component (nT).
-    ///   - By: Northerly component (nT).
-    ///   - Bz: Vertical (up) component (nT).
-    ///   - Bxt: Time derivative of Bx (nT/yr).
-    ///   - Byt: Time derivative of By (nT/yr).
-    ///   - Bzt: Time derivative of Bz (nT/yr).
+    ///   - east: Easterly component (nT).
+    ///   - north: Northerly component (nT).
+    ///   - up: Vertical (up) component (nT).
+    ///   - eastDeltaT: Time derivative of easterly component (nT/yr).
+    ///   - northDeltaT: Time derivative of northerly component (nT/yr).
+    ///   - upDeltaT: Time derivative of vertical component (nT/yr).
     /// - Returns: Field components and their rates.
     public static func fieldComponentsWithRates(
-        Bx: Double, By: Double, Bz: Double,
-        Bxt: Double, Byt: Double, Bzt: Double)
+        east: Double, north: Double, up: Double,
+        eastDeltaT: Double, northDeltaT: Double, upDeltaT: Double)
         -> MagneticFieldComponentsWithRates
     {
-        let H = hypot(Bx, By)
+        let H = hypot(east, north)
         let Ht = H != 0
-            ? (Bx * Bxt + By * Byt) / H
-            : hypot(Bxt, Byt)
+            ? (east * eastDeltaT + north * northDeltaT) / H
+            : hypot(eastDeltaT, northDeltaT)
         let D = H != 0
-            ? atan2d(Bx, By)
-            : atan2d(Bxt, Byt)
+            ? atan2d(east, north)
+            : atan2d(eastDeltaT, northDeltaT)
         let Dt = (H != 0
-            ? (By * Bxt - Bx * Byt) / (H * H)
+            ? (north * eastDeltaT - east * northDeltaT) / (H * H)
             : 0) / Math.degree
-        let F = hypot(H, Bz)
+        let F = hypot(H, up)
         let Ft = F != 0
-            ? (H * Ht + Bz * Bzt) / F
-            : hypot(Ht, Bzt)
+            ? (H * Ht + up * upDeltaT) / F
+            : hypot(Ht, upDeltaT)
         let I = F != 0
-            ? atan2d(-Bz, H)
-            : atan2d(-Bzt, Ht)
+            ? atan2d(-up, H)
+            : atan2d(-upDeltaT, Ht)
         let It = (F != 0
-            ? (Bz * Ht - H * Bzt) / (F * F)
+            ? (up * Ht - H * upDeltaT) / (F * F)
             : 0) / Math.degree
 
         return MagneticFieldComponentsWithRates(
@@ -347,19 +348,19 @@ public struct MagneticModel: Sendable {
         let local = Geocentric.unrotate(
             M: geo.M, X: geocentric.BX, Y: geocentric.BY, Z: geocentric.BZ)
 
-        var Bxt = 0.0, Byt = 0.0, Bzt = 0.0
+        var eastDeltaT = 0.0, northDeltaT = 0.0, upDeltaT = 0.0
         if diffp {
             let localT = Geocentric.unrotate(
                 M: geo.M,
                 X: geocentric.BXt, Y: geocentric.BYt, Z: geocentric.BZt)
-            Bxt = localT.x
-            Byt = localT.y
-            Bzt = localT.z
+            eastDeltaT = localT.x
+            northDeltaT = localT.y
+            upDeltaT = localT.z
         }
 
         return MagneticFieldWithRates(
-            field: MagneticField(Bx: local.x, By: local.y, Bz: local.z),
-            Bxt: Bxt, Byt: Byt, Bzt: Bzt)
+            field: MagneticField(east: local.x, north: local.y, up: local.z),
+            eastDeltaT: eastDeltaT, northDeltaT: northDeltaT, upDeltaT: upDeltaT)
     }
 
     /// Evaluate the magnetic field in geocentric coordinates with time

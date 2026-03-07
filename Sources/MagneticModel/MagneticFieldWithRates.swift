@@ -13,10 +13,10 @@ import Math
 public struct MagneticFieldWithRates: Sendable {
     /// The magnetic field.
     public let field: MagneticField
-    /// Rate of change of Bx (nT/yr).
-    public let Bxt: Double
-    /// Rate of change of By (nT/yr).
-    public let Byt: Double
-    /// Rate of change of Bz (nT/yr).
-    public let Bzt: Double
+    /// Rate of change of the easterly component (nT/yr).
+    public let eastDeltaT: Double
+    /// Rate of change of the northerly component (nT/yr).
+    public let northDeltaT: Double
+    /// Rate of change of the vertical (up) component (nT/yr).
+    public let upDeltaT: Double
 }
