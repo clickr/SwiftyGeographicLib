@@ -208,6 +208,55 @@ public struct MagneticModel: Sendable {
             time: time, lat: latitude, lon: longitude, h: height, diffp: true)
     }
 
+    /// Evaluate the magnetic field at a given date and position.
+    ///
+    /// - Parameters:
+    ///   - date: The date at which to evaluate the field.
+    ///   - latitude: Geodetic latitude in degrees.
+    ///   - longitude: Longitude in degrees.
+    ///   - height: Height above the ellipsoid in meters.
+    /// - Returns: The magnetic field in the local (east, north, up) basis.
+    public func field(date: Date, latitude: Double,
+                       longitude: Double, height: Double) -> MagneticField
+    {
+        field(time: Self.fractionalYear(from: date),
+              latitude: latitude, longitude: longitude, height: height)
+    }
+
+    /// Evaluate the magnetic field and its time derivatives at a given date.
+    ///
+    /// - Parameters:
+    ///   - date: The date at which to evaluate the field.
+    ///   - latitude: Geodetic latitude in degrees.
+    ///   - longitude: Longitude in degrees.
+    ///   - height: Height above the ellipsoid in meters.
+    /// - Returns: The field and its time derivatives.
+    public func fieldWithRates(date: Date, latitude: Double,
+                                longitude: Double, height: Double)
+        -> MagneticFieldWithRates
+    {
+        fieldWithRates(time: Self.fractionalYear(from: date),
+                       latitude: latitude, longitude: longitude, height: height)
+    }
+
+    /// Convert a `Date` to a fractional year.
+    ///
+    /// Accounts for leap years by interpolating between the start of the
+    /// current year and the start of the next year.
+    ///
+    /// - Parameter date: The date to convert.
+    /// - Returns: The fractional year (e.g. 2025-07-02 ≈ 2025.5).
+    static func fractionalYear(from date: Date) -> Double {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let year = cal.component(.year, from: date)
+        let startOfYear = cal.date(from: DateComponents(year: year, month: 1, day: 1))!
+        let startOfNextYear = cal.date(from: DateComponents(year: year + 1, month: 1, day: 1))!
+        let yearLength = startOfNextYear.timeIntervalSince(startOfYear)
+        let elapsed = date.timeIntervalSince(startOfYear)
+        return Double(year) + elapsed / yearLength
+    }
+
     /// Compute derived field components from the field vector.
     ///
     /// - Parameters:

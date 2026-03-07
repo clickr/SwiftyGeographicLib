@@ -7,6 +7,7 @@
 //
 
 import Testing
+import Foundation
 @testable import MagneticModel
 import Numerics
 
@@ -242,6 +243,67 @@ import Numerics
     #expect(model.maxHeight == 850000)
     #expect(model.degree == 12)
     #expect(model.order == 12)
+}
+
+/// Test Date-based API produces the same results as fractional year API.
+@Test func testFieldWithDate() throws {
+    let model = try MagneticModel(name: "wmm2025")
+    let cal = Calendar(identifier: .gregorian)
+
+    // 2025-07-02 12:00:00 UTC ≈ 2025.5
+    let midYear = cal.date(from: DateComponents(
+        timeZone: TimeZone(identifier: "UTC"),
+        year: 2025, month: 7, day: 2, hour: 12))!
+    let fractional = MagneticModel.fractionalYear(from: midYear)
+
+    // Verify fractional year is close to 2025.5
+    #expect(fractional.isApproximatelyEqual(to: 2025.5, absoluteTolerance: 0.01))
+
+    // field(date:) should match field(time:)
+    let dateResult = model.field(
+        date: midYear, latitude: 47.6, longitude: -122.3, height: 0)
+    let timeResult = model.field(
+        time: fractional, latitude: 47.6, longitude: -122.3, height: 0)
+
+    #expect(dateResult.Bx == timeResult.Bx)
+    #expect(dateResult.By == timeResult.By)
+    #expect(dateResult.Bz == timeResult.Bz)
+
+    // fieldWithRates(date:) should match fieldWithRates(time:)
+    let dateRates = model.fieldWithRates(
+        date: midYear, latitude: 47.6, longitude: -122.3, height: 0)
+    let timeRates = model.fieldWithRates(
+        time: fractional, latitude: 47.6, longitude: -122.3, height: 0)
+
+    #expect(dateRates.field.Bx == timeRates.field.Bx)
+    #expect(dateRates.Bxt == timeRates.Bxt)
+}
+
+/// Test fractionalYear handles leap years correctly.
+@Test func testFractionalYearLeapYear() throws {
+    let cal = Calendar(identifier: .gregorian)
+
+    // 2024 is a leap year (366 days)
+    let leapMid = cal.date(from: DateComponents(
+        timeZone: TimeZone(identifier: "UTC"),
+        year: 2024, month: 7, day: 2))!
+    let leapFrac = MagneticModel.fractionalYear(from: leapMid)
+
+    // 2025 is not a leap year (365 days)
+    let normalMid = cal.date(from: DateComponents(
+        timeZone: TimeZone(identifier: "UTC"),
+        year: 2025, month: 7, day: 2))!
+    let normalFrac = MagneticModel.fractionalYear(from: normalMid)
+
+    // Both should be close to X.5 but slightly different due to leap day
+    #expect(leapFrac.isApproximatelyEqual(to: 2024.5, absoluteTolerance: 0.01))
+    #expect(normalFrac.isApproximatelyEqual(to: 2025.5, absoluteTolerance: 0.01))
+
+    // Jan 1 of any year should give exactly that year
+    let jan1 = cal.date(from: DateComponents(
+        timeZone: TimeZone(identifier: "UTC"),
+        year: 2025, month: 1, day: 1))!
+    #expect(MagneticModel.fractionalYear(from: jan1) == 2025.0)
 }
 
 /// Test that field values are finite for various positions.
