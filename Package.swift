@@ -32,6 +32,10 @@ let package = Package(
             name: "StaticUTM",
             targets: ["StaticUTM"]
         ),
+        .library(
+            name: "MagneticModel",
+            targets: ["MagneticModel"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.0")],
@@ -96,6 +100,11 @@ let package = Package(
                     .define("GEOGRAPHICLIB_PRECISION", to: "2"),
                     .define("GEOGRAPHICLIB_SHARED_LIB", to: "0")]),
         .target(
+            name: "MagneticModel",
+            dependencies: ["Math"],
+            resources: [.process("Resources")]
+        ),
+        .target(
             name: "Math"
         ),
         .testTarget(
@@ -154,6 +163,12 @@ let package = Package(
                 "UTM",
                 "UPS",
                 "Constants",
+                .product(name: "Numerics", package: "swift-numerics")]
+        ),
+        .testTarget(
+            name: "MagneticModelTests",
+            dependencies: [
+                "MagneticModel",
                 .product(name: "Numerics", package: "swift-numerics")]
         )
     ],
