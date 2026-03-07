@@ -17,7 +17,7 @@ import StaticUTM
 
 public struct UTM : MultiCoordinate {
     /// The cartesian UTM components: hemisphere, zone, easting, and northing.
-    public var utmCoordinate: UTMCoordinate
+    public var cartesianCoordinate: UTMCoordinate
 
     /// The meridian convergence at the point in degrees.
     ///
@@ -32,10 +32,10 @@ public struct UTM : MultiCoordinate {
 
     // MARK: - MultiCoordinate conformance (forwarded from utmCoordinate)
 
-    public var hemisphere: Hemisphere { utmCoordinate.hemisphere }
-    public var zone: Int32 { utmCoordinate.zone }
-    public var easting: Double { utmCoordinate.easting }
-    public var northing: Double { utmCoordinate.northing }
+    public var hemisphere: Hemisphere { cartesianCoordinate.hemisphere }
+    public var zone: Int32 { cartesianCoordinate.zone }
+    public var easting: Double { cartesianCoordinate.easting }
+    public var northing: Double { cartesianCoordinate.northing }
     public var latitude: CLLocationDegrees { geodeticCoordinate.latitude }
     public var longitude: CLLocationDegrees { geodeticCoordinate.longitude }
 
@@ -91,7 +91,7 @@ public struct UTM : MultiCoordinate {
         let y = hemisphere == .northern ? northing : northing - UTMConstants.utmNorthShift
         let reverseTM = StaticUTM.reverse(centralMeridian: lon0, x: x, y: y)
 
-        utmCoordinate = UTMCoordinate(zone: zone, hemisphere: hemisphere, easting: easting, northing: northing)
+        cartesianCoordinate = UTMCoordinate(zone: zone, hemisphere: hemisphere, easting: easting, northing: northing)
         convergence = reverseTM.convergence
         centralScale = reverseTM.centralScale
         geodeticCoordinate = reverseTM.coordinate
@@ -148,7 +148,7 @@ public struct UTM : MultiCoordinate {
             }
         }
 
-        utmCoordinate = UTMCoordinate(zone: standardZone, hemisphere: h, easting: e, northing: n)
+        cartesianCoordinate = UTMCoordinate(zone: standardZone, hemisphere: h, easting: e, northing: n)
         convergence = forwardTM.convergence
         centralScale = forwardTM.centralScale
         geodeticCoordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)

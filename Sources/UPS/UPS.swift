@@ -12,6 +12,8 @@ import PolarStereographic
 import GeographicError
 import Constants
 
+
+
 /// Universal Polar Screen (UPS) coordinate representation.
 ///
 /// UPS is used to represent coordinates in the polar regions where UTM is not
@@ -36,18 +38,20 @@ import Constants
 ///   to avoid negative coordinates. These must be subtracted to get the actual
 ///   polar stereographic coordinates.
 public struct UPS : MultiCoordinate {
+    public var cartesianCoordinate: UPSCoordinate
+    
     /// The hemisphere (northern or southern) of the coordinate.
-    public var hemisphere: Hemisphere
+    public var hemisphere: Hemisphere { cartesianCoordinate.hemisphere }
     
     /// The easting coordinate in meters.
     ///
     /// This includes a false easting of 2,000,000 meters.
-    public var easting: Double
+    public var easting: Double { cartesianCoordinate.easting }
     
     /// The northing coordinate in meters.
     ///
     /// This includes a false northing of 2,000,000 meters.
-    public var northing: Double
+    public var northing: Double { cartesianCoordinate.northing }
     
     /// The meridian convergence at the point in degrees.
     ///
@@ -81,12 +85,13 @@ public struct UPS : MultiCoordinate {
         
         let forward = PolarStereographic.UPS.forward(coordinate: .init(latitude: latitude, longitude: longitude))
         
-        self.easting = forward.x + 20e5
-        self.northing = forward.y + 20e5
+        let easting = forward.x + 20e5
+        let northing = forward.y + 20e5
         self.convergence = forward.convergence
         self.centralScale = forward.centralScale
         self.geodeticCoordinate = .init(latitude: latitude, longitude: longitude)
-        self.hemisphere = forward.northp ? .northern : .southern
+        let hemisphere : Hemisphere = forward.northp ? .northern : .southern
+        self.cartesianCoordinate = .init(hemisphere: hemisphere, easting: easting, northing: northing)
     }
     
     /// Creates a UPS coordinate from easting and northing.
@@ -120,9 +125,7 @@ public struct UPS : MultiCoordinate {
                 throw CoordinateError.northingOutOfBounds(northing: northing)
             }
         }
-        self.hemisphere = hemisphere
-        self.easting = easting
-        self.northing = northing
+        self.cartesianCoordinate = .init(hemisphere: hemisphere, easting: easting, northing: northing)
         let reverse = PolarStereographic.UPS.reverse(northp: hemisphere == .northern,
                                                      x: easting - 20e5,
                                                      y: northing - 20e5)

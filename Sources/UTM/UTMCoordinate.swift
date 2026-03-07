@@ -8,8 +8,9 @@
 
 import Foundation
 import Constants
+import UTMUPSProtocol
 
-public struct UTMCoordinate {
+public struct UTMCoordinate : Cartesian {
     public let zone: Int32
     public let hemisphere: Hemisphere
     public let easting: Double
