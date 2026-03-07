@@ -9,87 +9,6 @@
 import Foundation
 import Math
 
-// MARK: - MagneticField result types
-
-/// The three-component magnetic field vector in the local (east, north, up) basis.
-public struct MagneticField: Sendable {
-    /// Easterly component of the magnetic field (nanotesla).
-    public let Bx: Double
-    /// Northerly component of the magnetic field (nanotesla).
-    public let By: Double
-    /// Vertical (up) component of the magnetic field (nanotesla).
-    public let Bz: Double
-}
-
-/// The magnetic field vector together with its time derivatives.
-public struct MagneticFieldWithRates: Sendable {
-    /// The magnetic field.
-    public let field: MagneticField
-    /// Rate of change of Bx (nT/yr).
-    public let Bxt: Double
-    /// Rate of change of By (nT/yr).
-    public let Byt: Double
-    /// Rate of change of Bz (nT/yr).
-    public let Bzt: Double
-}
-
-/// Derived geomagnetic elements.
-public struct MagneticFieldComponents: Sendable {
-    /// Horizontal field intensity (nT).
-    public let H: Double
-    /// Total field intensity (nT).
-    public let F: Double
-    /// Declination (degrees east of north).
-    public let D: Double
-    /// Inclination (degrees down from horizontal).
-    public let I: Double
-}
-
-/// Derived geomagnetic elements with time derivatives.
-public struct MagneticFieldComponentsWithRates: Sendable {
-    /// Horizontal field intensity (nT).
-    public let H: Double
-    /// Total field intensity (nT).
-    public let F: Double
-    /// Declination (degrees east of north).
-    public let D: Double
-    /// Inclination (degrees down from horizontal).
-    public let I: Double
-    /// Rate of change of H (nT/yr).
-    public let Ht: Double
-    /// Rate of change of F (nT/yr).
-    public let Ft: Double
-    /// Rate of change of D (degrees/yr).
-    public let Dt: Double
-    /// Rate of change of I (degrees/yr).
-    public let It: Double
-}
-
-// MARK: - MagneticModelError
-
-/// Errors that can occur when loading a magnetic model.
-public enum MagneticModelError: Error, CustomStringConvertible {
-    case fileNotFound(String)
-    case invalidSignature(String)
-    case invalidVersion(String)
-    case invalidMetadata(String)
-    case idMismatch(expected: String, got: String)
-    case invalidCoefficients(String)
-
-    public var description: String {
-        switch self {
-        case .fileNotFound(let s): return "File not found: \(s)"
-        case .invalidSignature(let s): return "Invalid signature: \(s)"
-        case .invalidVersion(let s): return "Unknown version: \(s)"
-        case .invalidMetadata(let s): return "Invalid metadata: \(s)"
-        case .idMismatch(let e, let g): return "ID mismatch: expected \(e), got \(g)"
-        case .invalidCoefficients(let s): return "Invalid coefficients: \(s)"
-        }
-    }
-}
-
-// MARK: - MagneticModel
-
 /// Model of the Earth's magnetic field.
 ///
 /// Evaluates the geomagnetic field at a given time and position using
@@ -302,7 +221,7 @@ public struct MagneticModel: Sendable {
         let full = fieldComponentsWithRates(
             Bx: Bx, By: By, Bz: Bz, Bxt: 0, Byt: 1, Bzt: 0)
         return MagneticFieldComponents(
-            H: full.H, F: full.F, D: full.D, I: full.I)
+            horizontalFieldIntensity: full.horizontalFieldIntensity, totalFieldIntensity: full.F, declination: full.D, inclination: full.I)
     }
 
     /// Compute derived field components with time derivatives.
@@ -342,8 +261,8 @@ public struct MagneticModel: Sendable {
             : 0) / Math.degree
 
         return MagneticFieldComponentsWithRates(
-            H: H, F: F, D: D, I: I,
-            Ht: Ht, Ft: Ft, Dt: Dt, It: It)
+            horizontalFieldIntensity: H, F: F, D: D, I: I,
+            horizontalFieldIntensityDeltaT: Ht, totalIntensityDeltaT: Ft, declinationDeltaT: Dt, inclinationDeltaT: It)
     }
 
     // MARK: - Private implementation

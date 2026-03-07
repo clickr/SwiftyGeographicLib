@@ -175,10 +175,10 @@ import Numerics
 
     let comp = MagneticModel.fieldComponents(Bx: Bx, By: By, Bz: Bz)
 
-    #expect(comp.H.isApproximatelyEqual(to: 2.003806353543176e+04, absoluteTolerance: 1e-6))
-    #expect(comp.F.isApproximatelyEqual(to: 4.473839503435500e+04, absoluteTolerance: 1e-6))
-    #expect(comp.D.isApproximatelyEqual(to: 3.532100799536939e+00, absoluteTolerance: 1e-9))
-    #expect(comp.I.isApproximatelyEqual(to: 6.339134782874967e+01, absoluteTolerance: 1e-9))
+    #expect(comp.horizontalFieldIntensity.isApproximatelyEqual(to: 2.003806353543176e+04, absoluteTolerance: 1e-6))
+    #expect(comp.totalFieldIntensity.isApproximatelyEqual(to: 4.473839503435500e+04, absoluteTolerance: 1e-6))
+    #expect(comp.declination.isApproximatelyEqual(to: 3.532100799536939e+00, absoluteTolerance: 1e-9))
+    #expect(comp.inclination.isApproximatelyEqual(to: 6.339134782874967e+01, absoluteTolerance: 1e-9))
 }
 
 /// Test FieldComponentsWithRates static utility.
@@ -191,14 +191,14 @@ import Numerics
         Bx: Bx, By: By, Bz: Bz,
         Bxt: Bxt, Byt: Byt, Bzt: Bzt)
 
-    #expect(comp.H.isApproximatelyEqual(to: 2.003806353543176e+04, absoluteTolerance: 1e-6))
+    #expect(comp.horizontalFieldIntensity.isApproximatelyEqual(to: 2.003806353543176e+04, absoluteTolerance: 1e-6))
     #expect(comp.F.isApproximatelyEqual(to: 4.473839503435500e+04, absoluteTolerance: 1e-6))
     #expect(comp.D.isApproximatelyEqual(to: 3.532100799536939e+00, absoluteTolerance: 1e-9))
     #expect(comp.I.isApproximatelyEqual(to: 6.339134782874967e+01, absoluteTolerance: 1e-9))
-    #expect(comp.Ht.isApproximatelyEqual(to: -4.374424696528506e+00, absoluteTolerance: 1e-6))
-    #expect(comp.Ft.isApproximatelyEqual(to: -4.641538880430108e+00, absoluteTolerance: 1e-6))
-    #expect(comp.Dt.isApproximatelyEqual(to: 2.941994597709088e-02, absoluteTolerance: 1e-9))
-    #expect(comp.It.isApproximatelyEqual(to: 3.288071258615021e-03, absoluteTolerance: 1e-9))
+    #expect(comp.horizontalFieldIntensityDeltaT.isApproximatelyEqual(to: -4.374424696528506e+00, absoluteTolerance: 1e-6))
+    #expect(comp.totalIntensityDeltaT.isApproximatelyEqual(to: -4.641538880430108e+00, absoluteTolerance: 1e-6))
+    #expect(comp.declinationDeltaT.isApproximatelyEqual(to: 2.941994597709088e-02, absoluteTolerance: 1e-9))
+    #expect(comp.inclinationDeltaT.isApproximatelyEqual(to: 3.288071258615021e-03, absoluteTolerance: 1e-9))
 }
 
 /// Test full pipeline: model evaluation → field components.
@@ -221,7 +221,7 @@ import Numerics
     #expect(result.field.Bz.isApproximatelyEqual(
         to: -4.911136606498128e+04, absoluteTolerance: 1e-6))
 
-    #expect(comp.H.isApproximatelyEqual(
+    #expect(comp.horizontalFieldIntensity.isApproximatelyEqual(
         to: 1.906599963383442e+04, absoluteTolerance: 1e-6))
     #expect(comp.F.isApproximatelyEqual(
         to: 5.268243178523528e+04, absoluteTolerance: 1e-6))
