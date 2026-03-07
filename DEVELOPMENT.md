@@ -81,11 +81,15 @@ Work performed in this session:
     coordinates.
 
   The implementation reads the same binary data files as the C++ library and
-  produces identical results. A standalone C++ program was written against the
-  installed GeographicLib to generate reference values, which were then
-  hard-coded into the Swift test suite (the C++ interop route was abandoned
+  produces identical results. The C++ interop route for testing was abandoned
   because the needed methods — `IntForward`, `Unrotate` — are private in the
-  C++ headers and inaccessible via Swift-C++ interop).
+  C++ headers and inaccessible via Swift-C++ interop. Reference values were
+  instead generated using the `MagneticField` command-line utility (installed
+  with GeographicLib via Homebrew) and a small standalone C++ program compiled
+  against the same library. During the session David also pointed out that the
+  `MagneticField` CLI alone would have been sufficient for generating field
+  reference values without writing any C++ — `man MagneticField` describes its
+  usage. The generated values were hard-coded into the Swift test suite.
 
 - **Refactored types into separate files** (`16a397e`). David extracted result
   types (`MagneticField`, `MagneticFieldWithRates`, `MagneticFieldComponents`,
@@ -119,18 +123,36 @@ Work performed in this session:
    The vendored C++ sources (`SimpleGeographicLib`) are only used in test
    targets for other modules.
 
-2. **Reference values from a standalone C++ program.** Swift-C++ interop
-   couldn't access private methods needed for testing (`IntForward`,
-   `Unrotate`). Instead, a temporary C++ program was compiled against the
-   system-installed GeographicLib to print reference values, which were
-   hard-coded into Swift tests.
+2. **Reference values from the `MagneticField` CLI and a standalone C++ program.**
+   Swift-C++ interop couldn't access the private `IntForward` and `Unrotate`
+   methods needed for unit testing. GeographicLib was installed via Homebrew
+   (`brew install geographiclib`), which also installs the `MagneticField`
+   command-line utility. This CLI can evaluate any installed model at arbitrary
+   positions and times, making it a convenient way to generate test reference
+   values without writing any C++ code (`man MagneticField` for usage). A small
+   standalone C++ program was also written to generate the lower-level
+   `Geocentric` reference values that the CLI doesn't expose directly. All
+   reference values were then hard-coded into the Swift test suite.
 
-3. **UTC-based fractional year conversion.** The `fractionalYear(from:)` helper
+3. **Bundled magnetic model data files.** The magnetic model data files
+   (`.wmm` metadata and `.wmm.cof` binary coefficients) for WMM2025 are
+   bundled directly in `Sources/MagneticModel/Resources` so the library has no
+   runtime dependency on external files. The files were obtained by running:
+   ```
+   sudo geographiclib-get-magnetic all
+   ```
+   which placed all available models under
+   `/usr/local/share/GeographicLib/magnetic/`. The WMM2025 files were then
+   copied into the package resources directory. The `init(name:directory:)`
+   initializer allows consumers to load additional models (IGRF, EMM, etc.)
+   from that system location or any other directory at runtime.
+
+4. **UTC-based fractional year conversion.** The `fractionalYear(from:)` helper
    explicitly uses UTC to avoid timezone-dependent results (a bug caught during
    development where local timezone caused Jan 1 UTC to produce ~2025.001
    instead of 2025.0).
 
-4. **No default `Geocentric` parameter on public init.** `Geocentric.wgs84` is
+5. **No default `Geocentric` parameter on public init.** `Geocentric.wgs84` is
    internal, so it can't appear as a default argument in a public initializer.
    The convenience initializers pass `.wgs84` explicitly.
 
