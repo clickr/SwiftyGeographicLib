@@ -273,10 +273,13 @@ public struct MagneticModel: Sendable {
 
     /// Compute derived field components from the field vector.
     ///
+    /// Corresponds to `MagneticModel::FieldComponents` in the GeographicLib C++ API.
+    /// Parameters were originally named `Bx`, `By`, `Bz` in the C++ API.
+    ///
     /// - Parameters:
-    ///   - east: Easterly component (nT).
-    ///   - north: Northerly component (nT).
-    ///   - up: Vertical (up) component (nT).
+    ///   - east: Easterly component (nT). C++: `Bx`.
+    ///   - north: Northerly component (nT). C++: `By`.
+    ///   - up: Vertical (up) component (nT). C++: `Bz`.
     /// - Returns: H (horizontal), F (total), D (declination), I (inclination).
     public static func fieldComponents(east: Double, north: Double, up: Double)
         -> MagneticFieldComponents
@@ -290,13 +293,16 @@ public struct MagneticModel: Sendable {
 
     /// Compute derived field components with time derivatives.
     ///
+    /// Corresponds to `MagneticModel::FieldComponents` in the GeographicLib C++ API.
+    /// Parameters were originally named `Bx`, `By`, `Bz`, `Bxt`, `Byt`, `Bzt` in the C++ API.
+    ///
     /// - Parameters:
-    ///   - east: Easterly component (nT).
-    ///   - north: Northerly component (nT).
-    ///   - up: Vertical (up) component (nT).
-    ///   - eastDeltaT: Time derivative of easterly component (nT/yr).
-    ///   - northDeltaT: Time derivative of northerly component (nT/yr).
-    ///   - upDeltaT: Time derivative of vertical component (nT/yr).
+    ///   - east: Easterly component (nT). C++: `Bx`.
+    ///   - north: Northerly component (nT). C++: `By`.
+    ///   - up: Vertical (up) component (nT). C++: `Bz`.
+    ///   - eastDeltaT: Time derivative of easterly component (nT/yr). C++: `Bxt`.
+    ///   - northDeltaT: Time derivative of northerly component (nT/yr). C++: `Byt`.
+    ///   - upDeltaT: Time derivative of vertical component (nT/yr). C++: `Bzt`.
     /// - Returns: Field components and their rates.
     public static func fieldComponentsWithRates(
         east: Double, north: Double, up: Double,
