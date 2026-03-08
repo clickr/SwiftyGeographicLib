@@ -11,11 +11,17 @@ import Math
 
 /// Errors that can occur when loading a magnetic model.
 public enum MagneticModelError: Error, CustomStringConvertible {
+    /// The coefficient file could not be found at the given path.
     case fileNotFound(String)
+    /// The file header does not match the expected magic bytes.
     case invalidSignature(String)
+    /// The file format version is not supported.
     case invalidVersion(String)
+    /// Required metadata fields are missing or malformed.
     case invalidMetadata(String)
+    /// The model ID in the secular-variation file does not match the main file.
     case idMismatch(expected: String, got: String)
+    /// One or more coefficient lines could not be parsed.
     case invalidCoefficients(String)
 
     public var description: String {

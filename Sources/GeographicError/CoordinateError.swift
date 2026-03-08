@@ -5,6 +5,7 @@
 //  Created by David Hart on 14/8/2025.
 //
 
+/// Errors thrown when a UTM or UPS coordinate component is out of the valid range.
 public enum CoordinateError : Error, Equatable {
     /// Valid zones are in the closed range [1, 60]
     case invalidZone(zone: Int32)

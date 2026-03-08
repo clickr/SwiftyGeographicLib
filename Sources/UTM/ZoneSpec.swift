@@ -6,8 +6,12 @@
 //
 import Foundation
 
+/// Specifies how a UTM zone should be selected when converting from
+/// latitude/longitude.
+///
+/// Mirrors the C++ `GeographicLib::UTMUPS` zone-selection constants.
 public enum ZoneSpec : OptionSet {
-    ///
+    /// The raw integer value corresponding to the C++ UTMUPS zone constants.
     public var rawValue: Int32 {
         switch self {
         case .invalid:

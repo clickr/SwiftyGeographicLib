@@ -17,9 +17,8 @@ import Math
 /// 6th-order series, achieving ~5 nm accuracy within 35° of the central meridian.
 /// All ellipsoid parameters are passed explicitly so this single implementation can be
 /// shared between the dynamic `TransverseMercator` instance and any
-/// `TransverseMercatorStaticInternal` conformer without code duplication.
+/// ``TransverseMercatorStaticProtocol`` conformer without code duplication.
 ///
-/// Marked `@inlinable` for the same reasons as `_forward`: it allows the compiler to
 /// inline the body at each call site and constant-fold `static let` values in the
 /// static code path.
 ///
@@ -45,8 +44,7 @@ import Math
 ///   - _bet: Krüger reverse coefficients β₁–β₆; index 0 is unused.
 /// - Returns: Geographic `coordinate` (latitude and longitude in degrees),
 ///   meridian convergence γ in degrees, and the scale factor at the point.
-@inlinable
-public func _reverse(centralMeridian: Double,
+func _reverse(centralMeridian: Double,
                     x: Double,
                     y: Double,
                     centralScale: Double,

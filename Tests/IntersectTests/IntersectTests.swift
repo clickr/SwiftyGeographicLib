@@ -159,4 +159,50 @@ import CoreLocation
     #expect(coord.latitude.isApproximatelyEqual(to: pos.latitude, absoluteTolerance: 1e-12))
     #expect(coord.longitude.isApproximatelyEqual(to: pos.longitude, absoluteTolerance: 1e-12))
 }
+
+// Reference:
+//   echo "0 0 0 1 0 0" | IntersectTool -c -p 17
+//   => 55287.19427889938378939 -55287.19427889938378939 1
+@Test func testClosestIntersectionParallel() {
+    let geod = Geodesic.wgs84
+    let inter = Intersect(geodesic: geod)
+
+    // Two lines on the same meridian, both heading north
+    let lineX = geod.line(latitude: 0, longitude: 0, azimuth: 0)
+    let lineY = geod.line(latitude: 1, longitude: 0, azimuth: 0)
+
+    let result = inter.closestIntersection(lineX: lineX, lineY: lineY)
+
+    guard case .parallel = result else {
+        Issue.record("Expected .parallel, got \(result)")
+        return
+    }
+
+    // Verify the underlying Point has c == 1
+    let p = inter.closest(lineX: lineX, lineY: lineY)
+    #expect(p.c == 1)
+}
+
+// Reference:
+//   echo "0 0 0 1 0 180" | IntersectTool -c -p 17
+//   => 55287.19427889938378939 55287.19427889938378939 -1
+@Test func testClosestIntersectionAntiParallel() {
+    let geod = Geodesic.wgs84
+    let inter = Intersect(geodesic: geod)
+
+    // Two lines on the same meridian, opposite directions
+    let lineX = geod.line(latitude: 0, longitude: 0, azimuth: 0)
+    let lineY = geod.line(latitude: 1, longitude: 0, azimuth: 180)
+
+    let result = inter.closestIntersection(lineX: lineX, lineY: lineY)
+
+    guard case .antiParallel = result else {
+        Issue.record("Expected .antiParallel, got \(result)")
+        return
+    }
+
+    // Verify the underlying Point has c == -1
+    let p = inter.closest(lineX: lineX, lineY: lineY)
+    #expect(p.c == -1)
+}
 #endif

@@ -9,7 +9,7 @@ import CoreLocation
 import ComplexModule
 import Math
 
-public extension TransverseMercatorStaticInternal {
+public extension TransverseMercatorStaticProtocol {
     /// Reverse projection, from transverse Mercator to geographic.
     ///
     /// This function converts transverse Mercator projection coordinates (easting,

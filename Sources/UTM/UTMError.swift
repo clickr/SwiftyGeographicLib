@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Errors thrown when constructing a ``UTM`` coordinate from grid components.
 public enum UTMError : Error, Equatable {
     /// Valid zones are in the closed range [1, 60]
     case invalidZone(zone: Int32)

@@ -7,12 +7,11 @@
 
 
 import Foundation
-import TransverseMercatorStatic
 import CoreLocation
 
 /// A statically configured transverse Mercator projection using WGS84 ellipsoid parameters.
 ///
-/// `StaticUTM` wraps `InternalUTM`, a concrete conformance of ``TransverseMercatorStaticInternal``
+/// `StaticUTM` wraps `InternalUTM`, a concrete conformance of ``TransverseMercatorStaticProtocol``
 /// pre-computed for the WGS84 datum (equatorial radius 6378137 m, flattening 1/298.257223563,
 /// central scale factor 0.9996). Because all ellipsoid constants are stored as static `let`
 /// properties at compile time, repeated projections avoid the setup cost paid by the dynamic
@@ -27,7 +26,7 @@ import CoreLocation
 /// let (back, γ, k) = StaticUTM.reverse(centralMeridian: lon0, x: x, y: y)
 /// ```
 ///
-/// - SeeAlso: ``TransverseMercatorStaticInternal``
+/// - SeeAlso: ``TransverseMercatorStaticProtocol``
 public struct StaticUTM {
     /// Forward projection, from geographic to transverse Mercator.
     ///

@@ -12,8 +12,6 @@ import Math
 import GeographicError
 import UTMUPSProtocol
 import Constants
-import TransverseMercatorInternal
-import StaticUTM
 
 public struct UTM : MultiCoordinate {
     /// The cartesian UTM components: hemisphere, zone, easting, and northing.
@@ -32,11 +30,17 @@ public struct UTM : MultiCoordinate {
 
     // MARK: - MultiCoordinate conformance (forwarded from utmCoordinate)
 
+    /// The hemisphere of the coordinate.
     public var hemisphere: Hemisphere { cartesianCoordinate.hemisphere }
+    /// The UTM zone number (1–60).
     public var zone: Int32 { cartesianCoordinate.zone }
+    /// The easting in metres, including the 500 km false easting.
     public var easting: Double { cartesianCoordinate.easting }
+    /// The northing in metres.
     public var northing: Double { cartesianCoordinate.northing }
+    /// The latitude in degrees.
     public var latitude: CLLocationDegrees { geodeticCoordinate.latitude }
+    /// The longitude in degrees.
     public var longitude: CLLocationDegrees { geodeticCoordinate.longitude }
 
     /// Init with UTM Coordinates

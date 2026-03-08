@@ -6,7 +6,6 @@
 //
 import Foundation
 import Math
-import PolarStereographicInternal
 import CoreLocation
 
 /// A polar stereographic projection implementation.
@@ -143,4 +142,14 @@ public struct PolarStereographic: Sendable {
         equatorialRadius: 6378137.0,
         flattening: 1.0 / 298.257223563,
         centralScaleFactor: 0.994)
+}
+
+// MARK: - Internal computation (inlined from PolarStereographicInternal)
+
+func polarStereographicInternal(flattening: Double) -> (e2: Double, es: Double, e2m: Double, c: Double) {
+    let e2 = flattening * (2 - flattening)
+    let es = (flattening < 0 ? -1 : 1) * sqrt(abs(e2))
+    let e2m = 1 - e2
+    let c = (1 - flattening) * exp(eatanhe(1, es))
+    return (e2, es, e2m, c)
 }

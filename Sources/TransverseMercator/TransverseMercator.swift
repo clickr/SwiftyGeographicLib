@@ -4,7 +4,6 @@
 import Foundation
 import CoreLocation
 import ComplexModule
-import TransverseMercatorInternal
 import Math
 
 public enum TransverseMercatorError: Error, Equatable {

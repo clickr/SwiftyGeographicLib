@@ -13,10 +13,6 @@ let package = Package(
             targets: ["TransverseMercator"]
         ),
         .library(
-            name: "TransverseMercatorStatic",
-            targets: ["TransverseMercatorStatic"]
-        ),
-        .library(
             name: "UTM",
             targets: ["UTM"]
         ),
@@ -27,10 +23,6 @@ let package = Package(
         .library(
             name: "UPS",
             targets: ["UPS"]
-        ),
-        .library(
-            name: "StaticUTM",
-            targets: ["StaticUTM"]
         ),
         .library(
             name: "MagneticModel",
@@ -56,32 +48,14 @@ let package = Package(
                 dependencies: ["Geodesic", "Math"]),
         .target(
             name: "PolarStereographic",
-            dependencies: ["Math", "PolarStereographicInternal"]
-        ),
-        .target(
-            name: "PolarStereographicInternal",
             dependencies: ["Math"]
-        ),
-        .target(
-            name: "TransverseMercatorInternal",
-            dependencies: [
-                "Math",
-                .product(name: "ComplexModule", package: "swift-numerics"),
-                .product(name: "RealModule", package: "swift-numerics")
-            ]
-        ),
-        .target(
-            name: "TransverseMercatorStatic",
-            dependencies: ["Math", "TransverseMercatorInternal",
-                           .product(name: "ComplexModule", package: "swift-numerics")]
         ),
         .target(
             name: "TransverseMercator",
             dependencies: [
                 "Math",
-                "TransverseMercatorInternal",
-                "TransverseMercatorStatic",
-                .product(name: "ComplexModule", package: "swift-numerics")]
+                .product(name: "ComplexModule", package: "swift-numerics"),
+                .product(name: "RealModule", package: "swift-numerics")]
         ),
         .target(
             name: "UPS",
@@ -92,25 +66,9 @@ let package = Package(
             dependencies: ["Constants"],
         ),
         .target(
-            name: "StaticUTM",
-            dependencies: ["TransverseMercatorStatic"]
-        ),
-        .target(
             name: "UTM",
-            dependencies: ["TransverseMercator", "StaticUTM", "Math", "GeographicError", "UTMUPSProtocol", "Constants"]
+            dependencies: ["TransverseMercator", "Math", "GeographicError", "UTMUPSProtocol", "Constants"]
         ),
-        .target(name: "SimpleGeographicLib",
-                cxxSettings: [
-                    .headerSearchPath("include"),
-                    .define("GEOGRAPHICLIB_VERSION_STRING", to: "\"2.5\""),
-                    .define("GEOGRAPHICLIB_VERSION_MAJOR", to: "2"),
-                    .define("GEOGRAPHICLIB_VERSION_MINOR", to: "5"),
-                    .define("GEOGRAPHICLIB_VERSION_PATCH", to: "0"),
-                    .define("GEOGRAPHICLIB_DATA", to: "\"/usr/local/share/GeographicLib\""),
-                    .define("GEOGRAPHICLIB_HAVE_LONG_DOUBLE", to: "0"),
-                    .define("GEOGRAPHICLIB_WORDS_BIGENDIAN", to: "0"),
-                    .define("GEOGRAPHICLIB_PRECISION", to: "2"),
-                    .define("GEOGRAPHICLIB_SHARED_LIB", to: "0")]),
         .target(
             name: "MagneticModel",
             dependencies: ["Math"],
@@ -127,37 +85,17 @@ let package = Package(
         ),
         .testTarget(
             name: "MathTests",
-            dependencies: ["Math", "SimpleGeographicLib"],
-            swiftSettings: [.interoperabilityMode(.Cxx)]),
-        .testTarget(
-            name: "PolarStereographicInternalTests",
-            dependencies: ["PolarStereographicInternal",
-                           "SimpleGeographicLib",
-                           .product(name: "Numerics", package: "swift-numerics")],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
-        ),
+            dependencies: ["Math"]),
         .testTarget(
             name: "PolarStereographicTests",
             dependencies: ["PolarStereographic",
-                           "SimpleGeographicLib",
-                           .product(name: "Numerics", package: "swift-numerics")],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
+                           .product(name: "Numerics", package: "swift-numerics")]
         ),
         .testTarget(
             name: "TransverseMercatorTests",
             dependencies: ["TransverseMercator",
-                           "TransverseMercatorStatic",
-                           "StaticUTM",
-                           //                           "SimpleGeographicLib",
                            "Math",
-                           "TransverseMercatorInternal",
-                           .product(name: "Numerics", package: "swift-numerics")],
-            //            swiftSettings: [.interoperabilityMode(.Cxx)]
-        ),
-        .testTarget(
-            name: "TransverseMercatorInternalTests",
-            dependencies: ["TransverseMercatorInternal", "SimpleGeographicLib"],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
+                           .product(name: "Numerics", package: "swift-numerics")]
         ),
         .testTarget(
             name: "UTMTests",
@@ -170,10 +108,8 @@ let package = Package(
             name: "UPSTests",
             dependencies: [
                 "UPS",
-                "SimpleGeographicLib",
                 "Constants",
-                .product(name: "Numerics", package: "swift-numerics")],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
+                .product(name: "Numerics", package: "swift-numerics")]
         ),
         .testTarget(
             name: "UTMUPSTests",
@@ -197,10 +133,7 @@ let package = Package(
             name: "GeodesicTests",
             dependencies: [
                 "Geodesic",
-                //                "SimpleGeographicLib",
-                .product(name: "Numerics", package: "swift-numerics")],
-            //            swiftSettings: [.interoperabilityMode(.Cxx)]
+                .product(name: "Numerics", package: "swift-numerics")]
         )
-    ],
-    cxxLanguageStandard: .cxx20
+    ]
 )

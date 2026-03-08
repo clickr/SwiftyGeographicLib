@@ -455,6 +455,16 @@ extension Intersect {
     /// Find the closest intersection of two geodesics.
     ///
     /// Corresponds to `Intersect::Closest` in C++.
+    ///
+    /// - Parameters:
+    ///   - latitudeX: Latitude of geodesic X origin in degrees.
+    ///   - longitudeX: Longitude of geodesic X origin in degrees.
+    ///   - azimuthX: Azimuth of geodesic X in degrees.
+    ///   - latitudeY: Latitude of geodesic Y origin in degrees.
+    ///   - longitudeY: Longitude of geodesic Y origin in degrees.
+    ///   - azimuthY: Azimuth of geodesic Y in degrees.
+    ///   - offset: Starting displacement `(x, y)` in metres along X and Y. Defaults to `(0, 0)`.
+    /// - Returns: The intersection ``Point`` closest (by L1 distance) to `offset`.
     public func closest(
         latitudeX: Double, longitudeX: Double, azimuthX: Double,
         latitudeY: Double, longitudeY: Double, azimuthY: Double,
@@ -470,6 +480,12 @@ extension Intersect {
     /// Find the closest intersection of two geodesic lines.
     ///
     /// Corresponds to `Intersect::Closest` (GeodesicLine overload) in C++.
+    ///
+    /// - Parameters:
+    ///   - lineX: The first geodesic line.
+    ///   - lineY: The second geodesic line.
+    ///   - offset: Starting displacement `(x, y)` in metres along X and Y. Defaults to `(0, 0)`.
+    /// - Returns: The intersection ``Point`` closest (by L1 distance) to `offset`.
     public func closest(
         lineX: GeodesicLine, lineY: GeodesicLine,
         offset: (x: Double, y: Double) = (0, 0)
@@ -484,6 +500,13 @@ extension Intersect {
     /// Both geodesics must start from the same point.
     ///
     /// Corresponds to `Intersect::Next` in C++.
+    ///
+    /// - Parameters:
+    ///   - latitude: Latitude of the common origin in degrees.
+    ///   - longitude: Longitude of the common origin in degrees.
+    ///   - azimuthX: Azimuth of geodesic X in degrees.
+    ///   - azimuthY: Azimuth of geodesic Y in degrees.
+    /// - Returns: The next-closest intersection ``Point``.
     public func next(
         latitude: Double, longitude: Double,
         azimuthX: Double, azimuthY: Double
@@ -500,6 +523,11 @@ extension Intersect {
     /// Both geodesic lines must start from the same point.
     ///
     /// Corresponds to `Intersect::Next` (GeodesicLine overload) in C++.
+    ///
+    /// - Parameters:
+    ///   - lineX: The first geodesic line.
+    ///   - lineY: The second geodesic line.
+    /// - Returns: The next-closest intersection ``Point``.
     public func next(
         lineX: GeodesicLine, lineY: GeodesicLine
     ) -> Point {
@@ -513,6 +541,19 @@ extension Intersect {
     /// actually intersect.
     ///
     /// Corresponds to `Intersect::Segment` in C++.
+    ///
+    /// - Parameters:
+    ///   - latitudeX1: Latitude of segment X start in degrees.
+    ///   - longitudeX1: Longitude of segment X start in degrees.
+    ///   - latitudeX2: Latitude of segment X end in degrees.
+    ///   - longitudeX2: Longitude of segment X end in degrees.
+    ///   - latitudeY1: Latitude of segment Y start in degrees.
+    ///   - longitudeY1: Longitude of segment Y start in degrees.
+    ///   - latitudeY2: Latitude of segment Y end in degrees.
+    ///   - longitudeY2: Longitude of segment Y end in degrees.
+    /// - Returns: A tuple of the intersection ``Point`` and a `segmentMode` indicator
+    ///   (0 = segments cross, non-zero encodes which side of each segment the
+    ///   closest intersection lies on).
     public func segment(
         latitudeX1: Double, longitudeX1: Double,
         latitudeX2: Double, longitudeX2: Double,
@@ -537,6 +578,17 @@ extension Intersect {
     /// Returns intersections sorted by L1 distance from `offset`.
     ///
     /// Corresponds to `Intersect::All` in C++.
+    ///
+    /// - Parameters:
+    ///   - latitudeX: Latitude of geodesic X origin in degrees.
+    ///   - longitudeX: Longitude of geodesic X origin in degrees.
+    ///   - azimuthX: Azimuth of geodesic X in degrees.
+    ///   - latitudeY: Latitude of geodesic Y origin in degrees.
+    ///   - longitudeY: Longitude of geodesic Y origin in degrees.
+    ///   - azimuthY: Azimuth of geodesic Y in degrees.
+    ///   - maxDistance: Maximum L1 displacement (metres) from `offset`.
+    ///   - offset: Starting displacement `(x, y)` in metres. Defaults to `(0, 0)`.
+    /// - Returns: An array of intersection ``Point``s within `maxDistance`, sorted by L1 distance.
     public func all(
         latitudeX: Double, longitudeX: Double, azimuthX: Double,
         latitudeY: Double, longitudeY: Double, azimuthY: Double,
@@ -553,6 +605,13 @@ extension Intersect {
     /// Find all intersections within a distance using geodesic lines.
     ///
     /// Corresponds to `Intersect::All` (GeodesicLine overload) in C++.
+    ///
+    /// - Parameters:
+    ///   - lineX: The first geodesic line.
+    ///   - lineY: The second geodesic line.
+    ///   - maxDistance: Maximum L1 displacement (metres) from `offset`.
+    ///   - offset: Starting displacement `(x, y)` in metres. Defaults to `(0, 0)`.
+    /// - Returns: An array of intersection ``Point``s within `maxDistance`, sorted by L1 distance.
     public func all(
         lineX: GeodesicLine, lineY: GeodesicLine,
         maxDistance: Double,
@@ -794,6 +853,12 @@ extension Intersect {
 
     /// Find the closest intersection of two geodesic lines, returning a
     /// geographic coordinate.
+    ///
+    /// - Parameters:
+    ///   - lineX: The first geodesic line.
+    ///   - lineY: The second geodesic line.
+    ///   - offset: Starting displacement `(x, y)` in metres. Defaults to `(0, 0)`.
+    /// - Returns: An ``IntersectionResult`` — `.point` with a coordinate, `.parallel`, or `.antiParallel`.
     public func closestIntersection(
         lineX: GeodesicLine, lineY: GeodesicLine,
         offset: (x: Double, y: Double) = (0, 0)
@@ -804,6 +869,16 @@ extension Intersect {
 
     /// Find the closest intersection of two geodesics specified by position and
     /// azimuth, returning a geographic coordinate.
+    ///
+    /// - Parameters:
+    ///   - latitudeX: Latitude of geodesic X origin in degrees.
+    ///   - longitudeX: Longitude of geodesic X origin in degrees.
+    ///   - azimuthX: Azimuth of geodesic X in degrees.
+    ///   - latitudeY: Latitude of geodesic Y origin in degrees.
+    ///   - longitudeY: Longitude of geodesic Y origin in degrees.
+    ///   - azimuthY: Azimuth of geodesic Y in degrees.
+    ///   - offset: Starting displacement `(x, y)` in metres. Defaults to `(0, 0)`.
+    /// - Returns: An ``IntersectionResult`` — `.point` with a coordinate, `.parallel`, or `.antiParallel`.
     public func closestIntersection(
         latitudeX: Double, longitudeX: Double, azimuthX: Double,
         latitudeY: Double, longitudeY: Double, azimuthY: Double,

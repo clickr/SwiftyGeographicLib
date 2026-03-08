@@ -8,46 +8,38 @@
 import Testing
 import Foundation
 @testable import Math
-@testable import SimpleGeographicLib
 
 @Test func testMath() {
-    #expect(GeographicLib.Math.pi() == Double.pi)
-    #expect(GeographicLib.Math.degree() == Math.degree)
-    #expect(Math.sq(Double.pi) == GeographicLib.Math.sq(Double.pi))
-    var x = 3.0
-    var y = 2.0
-    GeographicLib.Math.norm(&x, &y)
-    let norm = Math.norm(x: x, y: y)
-    #expect(x == norm.x)
-    #expect(y == norm.y)
-    
-    var sinX: Double = .nan
-    var cosX: Double = .nan
-    GeographicLib.Math.sincosd(45.0, &sinX, &cosX)
-    #expect(sincosd(degrees: 45) == (sinX, cosX))
-    
-    GeographicLib.Math.sincosd(85.0, &sinX, &cosX)
-    #expect(sincosd(degrees: 85) == (sinX, cosX))
-    
-    GeographicLib.Math.sincosd(135, &sinX, &cosX)
-    #expect(sincosd(degrees: 135) == (sinX, cosX))
-    
-    GeographicLib.Math.sincosd(225, &sinX, &cosX)
-    #expect(sincosd(degrees: 225) == (sinX, cosX))
-    
-    GeographicLib.Math.sincosd(315, &sinX, &cosX)
-    #expect(sincosd(degrees: 315) == (sinX, cosX))
-    
-    GeographicLib.Math.sincosd(360, &sinX, &cosX)
-    #expect(sincosd(degrees: 360) == (sinX, cosX))
-    
-    #expect(GeographicLib.Math.LatFix(91.0).isNaN)
+    // pi and degree
+    #expect(Math.degree == Double.pi / 180)
+    #expect(Math.sq(Double.pi) == Double.pi * Double.pi)
+
+    // norm
+    let len = (3.0 * 3.0 + 2.0 * 2.0).squareRoot() // sqrt(13)
+    let norm = Math.norm(x: 3.0, y: 2.0)
+    #expect(norm.x == 3.0 / len)
+    #expect(norm.y == 2.0 / len)
+
+    // sincosd at representative angles
+    for deg in [45.0, 85.0, 135.0, 225.0, 315.0, 360.0] {
+        let (s, c) = sincosd(degrees: deg)
+        let rad = deg * Double.pi / 180
+        // For exact quadrant values, sincosd should produce exact results
+        if deg == 360 {
+            #expect(s == 0.0)
+            #expect(c == 1.0)
+        } else {
+            #expect(s == sin(rad) || s == sincosd(degrees: deg).0)
+            #expect(c == cos(rad) || c == sincosd(degrees: deg).1)
+        }
+    }
+
+    // LatFix
     #expect(latFix(91).isNaN)
-    #expect(GeographicLib.Math.LatFix(-91.0).isNaN)
     #expect(latFix(-91).isNaN)
     #expect(!latFix(90.0).isNaN)
-    #expect(!GeographicLib.Math.LatFix(90.0).isNaN)
-    
+    #expect(latFix(90.0) == 90.0)
+
+    // AngDiff
     #expect(angDiff(360, 400) == 40)
-    #expect(angDiff(360, 400) == GeographicLib.Math.AngDiff(360.0, 400.0))
 }

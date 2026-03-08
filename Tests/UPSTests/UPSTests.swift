@@ -9,12 +9,11 @@ import Testing
 @testable import UPS
 import Numerics
 import CoreLocation
-import SimpleGeographicLib
 import UTMUPSProtocol
 import GeographicError
 import PolarStereographic
 
-let cppUPS: GeographicLib.PolarStereographic = GeographicLib.PolarStereographic.UPS().pointee
+// Reference values from GeographicLib 2.7 (C++) UTMUPS::Forward/Reverse.
 
 /// Tests that UPS throws an error for latitudes within the UTM zone.
 ///
@@ -27,103 +26,60 @@ let cppUPS: GeographicLib.PolarStereographic = GeographicLib.PolarStereographic.
     }
 }
 
-/// Tests that the UPS forward projection matches the C++ implementation
+/// Tests that the UPS forward projection matches GeographicLib
 /// for the northern hemisphere.
 ///
-/// Uses latitude 84.5° N, longitude 45.0° E.
-@Test func testUPSForwardMatchesCPP() throws {
-    let latitude = 84.5
-    let longitude = 45.0
-    
-    var x: Double = .nan
-    var y: Double = .nan
-    var zone : Int32 = -4
-    var gamma: Double = .nan
-    var k: Double = .nan
-    var northp : Bool = false
-    
-    GeographicLib.UTMUPS.Forward(latitude, longitude, &zone, &northp, &x, &y, &gamma, &k)
-    
-    let ups = try UPS(latitude: latitude, longitude: longitude)
-    
-    #expect(zone == 0)
-    #expect(ups.easting.isApproximatelyEqual(to: x, absoluteTolerance: 1e-9))
-    #expect(ups.northing.isApproximatelyEqual(to: y, absoluteTolerance: 1e-9))
-    #expect(ups.convergence.isApproximatelyEqual(to: gamma, absoluteTolerance: 1e-9))
-    #expect(ups.centralScale.isApproximatelyEqual(to: k, absoluteTolerance: 1e-9))
+/// Reference: UTMUPS::Forward(84.5, 45.0)
+/// zone=0, northp=true, x=2432099.770743945, y=1567900.229256055,
+/// gamma=45, k=0.996293297364271191
+@Test func testUPSForwardNorth() throws {
+    let ups = try UPS(latitude: 84.5, longitude: 45.0)
+
+    #expect(ups.easting.isApproximatelyEqual(to: 2.43209977074394468e+06, absoluteTolerance: 1e-9))
+    #expect(ups.northing.isApproximatelyEqual(to: 1.56790022925605532e+06, absoluteTolerance: 1e-9))
+    #expect(ups.convergence.isApproximatelyEqual(to: 4.50000000000000000e+01, absoluteTolerance: 1e-9))
+    #expect(ups.centralScale.isApproximatelyEqual(to: 9.96293297364271191e-01, absoluteTolerance: 1e-9))
 }
 
-/// Tests that the UPS forward projection matches the C++ implementation
+/// Tests that the UPS forward projection matches GeographicLib
 /// for the southern hemisphere.
 ///
-/// Uses latitude -80.4174° S, longitude 77.1166° E.
-@Test func testUPSForwardSouthMatchesCPP() throws {
-    let latitude = -80.4174
-    let longitude = 77.1166
-    
-    var x: Double = .nan
-    var y: Double = .nan
-    var zone : Int32 = -4
-    var gamma: Double = .nan
-    var k: Double = .nan
-    var northp: Bool = false
-    
-    GeographicLib.UTMUPS.Forward(latitude, longitude, &zone, &northp, &x, &y, &gamma, &k)
-    
-    let ups = try UPS(latitude: latitude, longitude: longitude)
-    
+/// Reference: UTMUPS::Forward(-80.4174, 77.1166)
+/// zone=0, northp=false, x=3039440.641302266, y=2237746.759453198,
+/// gamma=-77.1166, k=1.00098288665178403
+@Test func testUPSForwardSouth() throws {
+    let ups = try UPS(latitude: -80.4174, longitude: 77.1166)
+
     #expect(ups.hemisphere == .southern)
-    #expect(ups.easting.isApproximatelyEqual(to: x, absoluteTolerance: 1e-9))
-    #expect(ups.northing.isApproximatelyEqual(to: y, absoluteTolerance: 1e-9))
-    #expect(ups.convergence.isApproximatelyEqual(to: gamma, absoluteTolerance: 1e-9))
-    #expect(ups.centralScale.isApproximatelyEqual(to: k, absoluteTolerance: 1e-9))
+    #expect(ups.easting.isApproximatelyEqual(to: 3.03944064130226616e+06, absoluteTolerance: 1e-9))
+    #expect(ups.northing.isApproximatelyEqual(to: 2.23774675945319841e+06, absoluteTolerance: 1e-9))
+    #expect(ups.convergence.isApproximatelyEqual(to: -7.71166000000000054e+01, absoluteTolerance: 1e-9))
+    #expect(ups.centralScale.isApproximatelyEqual(to: 1.00098288665178403e+00, absoluteTolerance: 1e-9))
 }
 
 /// Tests the UPS reverse projection for the southern hemisphere.
 ///
-/// Uses GeoConvert output: `echo -80.4174 77.1166 | GeoConvert -u -p 9 -z 0`
-/// Result: `s 3039440.641302266 2237746.759453198`
+/// Reference: UTMUPS::Reverse(0, false, 3039440.641302266, 2237746.759453198)
+/// lat=-80.4174, lon=77.1166
 @Test func testUPSReverseSouthernHemisphere() throws {
     let ups = try UPS(hemisphere: .southern, easting: 3039440.641302266, northing: 2237746.759453198)
     #expect(ups.geodeticCoordinate.latitude.isApproximatelyEqual(to: -80.4174, absoluteTolerance: 1e-6))
     #expect(ups.geodeticCoordinate.longitude.isApproximatelyEqual(to: 77.1166, absoluteTolerance: 1e-6))
 }
 
-/// Tests that the UPS reverse projection matches the C++ implementation
-/// for the southern hemisphere.
-@Test func testUPSCPPReverseSouthernHemisphere() throws {
-    var latitude : Double = .nan
-    var longitude : Double = .nan
-    
-    let easting : Double = 3039440.641302266
-    let northing : Double = 2237746.759453198
-    
-    GeographicLib.UTMUPS.Reverse(0, false, easting, northing, &latitude, &longitude)
-    
-    let ups = try UPS(hemisphere: .southern, easting: easting, northing: northing)
-    #expect(ups.geodeticCoordinate.latitude.isApproximatelyEqual(to: latitude, absoluteTolerance: 1e-6))
-    #expect(ups.geodeticCoordinate.longitude.isApproximatelyEqual(to: longitude, absoluteTolerance: 1e-6))
-}
-
-/// Tests that the UPS reverse projection matches the C++ implementation
-/// for the northern hemisphere.
-@Test func testUPSCPPReverseNorthernHemisphere() throws {
-    var latitude : Double = .nan
-    var longitude : Double = .nan
-    let easting : Double = 2649639.515832669
-    let northing : Double = 1850018.900096025
-    
-    GeographicLib.UTMUPS.Reverse(0, true, easting, northing, &latitude, &longitude, false)
-    let ups = try UPS(hemisphere: .northern, easting: easting, northing: northing)
-    #expect(ups.geodeticCoordinate.latitude.isApproximatelyEqual(to: latitude, absoluteTolerance: 1e-6))
-    #expect(ups.geodeticCoordinate.longitude.isApproximatelyEqual(to: longitude, absoluteTolerance: 1e-6))
-}
-
 /// Tests the UPS reverse projection for the northern hemisphere.
 ///
-/// Uses GeoConvert output: `echo 88.0 77.0 | GeoConvert -u -p 9`
-/// Result: `n 2216377.647952983 1950045.283817091`
+/// Reference: UTMUPS::Reverse(0, true, 2649639.515832669, 1850018.900096025)
+/// lat=84.0, lon=77.0
 @Test func testUPSReverseNorthernHemisphere() throws {
+    let ups = try UPS(hemisphere: .northern, easting: 2649639.515832669, northing: 1850018.900096025)
+    #expect(ups.geodeticCoordinate.latitude.isApproximatelyEqual(to: 84.0, absoluteTolerance: 1e-6))
+    #expect(ups.geodeticCoordinate.longitude.isApproximatelyEqual(to: 77.0, absoluteTolerance: 1e-6))
+}
+
+/// Reference: echo 88.0 77.0 | GeoConvert -u -p 9
+/// n 2216377.647952983 1950045.283817091
+@Test func testUPSReverseNorthernHemisphereGeoConvert() throws {
     let ups = try UPS(hemisphere: .northern, easting: 2216377.647952983, northing: 1950045.283817091)
     #expect(ups.geodeticCoordinate.latitude.isApproximatelyEqual(to: 88.0, absoluteTolerance: 1e-6))
     #expect(ups.geodeticCoordinate.longitude.isApproximatelyEqual(to: 77.0, absoluteTolerance: 1e-6))
@@ -224,4 +180,3 @@ let cppUPS: GeographicLib.PolarStereographic = GeographicLib.PolarStereographic.
         try UPS(hemisphere: .southern, easting: 2000000, northing: 4000000)
     }
 }
-

@@ -559,6 +559,13 @@ public func sincosde(_ x: Double, _ t: Double) -> (sin: Double, cos: Double) {
     }
 }
 
+/// Returns the MGRS latitude band index for a given latitude.
+///
+/// The index ranges from −10 to 9, corresponding to the 20 MGRS latitude
+/// bands (each 8° wide) that span from 80° S to 84° N.
+///
+/// - Parameter latitude: The latitude in degrees.
+/// - Returns: The band index in the range [−10, 9].
 public func band(latitude: Double) -> Int {
 //    static int LatitudeBand(real lat) {
 //      using std::floor;

@@ -29,6 +29,8 @@ transformations and geomagnetic field evaluation, ported from Charles Karney's
 | **UPS** | Universal Polar Stereographic projection |
 | **UTMUPSProtocol** | Shared protocol for UTM/UPS coordinate types |
 | **MagneticModel** | Geomagnetic field evaluation (WMM, IGRF, EMM) |
+| **Geodesic** | Geodesic problem (direct/inverse) on the ellipsoid, line positions |
+| **Intersect** | Intersections of geodesics on an ellipsoid |
 | **SimpleGeographicLib** | Vendored C++ GeographicLib subset (test-only reference) |
 
 ---
@@ -637,4 +639,315 @@ Committed as `1d1e5e1` — "Fix three minor issues flagged in code review":
 
 All 53 tests passed before committing.
 
+---
+
+### Session 4 — 8 March 2026 (Claude Opus 4.6)
+
+Used **Claude Opus 4.6** via Claude Code. Intersect implementation and
+convenience API, followed by comprehensive documentation pass.
+
+*(David Hart)*
+
+Modify Intersect to provide the same functionality of `GeographicLib::Intersect`
+but with more conventional swift interface. Previous work can serve to give an
+example of what this might mean. Geodesic may need to be further developed.
+
+*(Claude Opus 4.6)*
+
+#### API Design Discussion
+
+See `Sources/Intersect/DEVELOPMENT.md` for the full API design exchange
+including proposed types, the four public operations, open questions about
+module structure, diagnostic counters, `Geodesic.c2` access, and offset
+parameter types.
+
+Agreed decisions:
+1. Collapse `IntersectInternal` into `Intersect`; use `@testable import`.
+2. Drop diagnostic counters.
+3. Add `public var ellipsoidArea: Double` to `Geodesic`.
+4. Use raw `Point` struct (x, y, c) until domain meaning is clearer.
+
+#### Implementation
+
+Complete port of `GeographicLib::Intersect` in pure Swift:
+
+- **Constructor** computing 15 ellipsoid-derived constants with helpers
+  (`conjugateDist`, `distpolar`, `polarb`, `conjdist`, `distoblique`).
+- **Layers 1–2**: `spherical` (initial approximation) and `basic` (Newton
+  refinement).
+- **Layer 3**: `closestInt` (5-point grid), `nextInt` (8-point grid),
+  `segmentInt`, `allInt0` (tiled search with array-based deduplication).
+- **Layer 4**: Public API — `closest`, `next`, `segment`, `all`, each with
+  lat/lon/azi and `GeodesicLine` overloads.
+
+Tests verified against `IntersectTool` (GeographicLib 2.7) and a C++ program
+using `#define private public` for constructor constants. Committed as
+`adaf3ed`.
+
+*(David Hart)*
+
+In other tests I've used `x.isApproximatelyEqual(to:absoluteTolerance:)` from
+'swift-numerics' `Numerics` for my accuracy tests. Can we modify the tests to
+use this convention for consistency?
+
+*(Claude Opus 4.6)*
+
+Migrated all tolerance checks in `IntersectTests.swift` to use
+`isApproximatelyEqual` from `Numerics`. Constructor constants and
+`ellipsoidArea` use `relativeTolerance` (proportional error); displacement
+values in `closest`, `next`, `segment`, `all` use `absoluteTolerance` (metre-
+scale quantities where absolute error is meaningful).
+
+*(David Hart)*
+
+My main use case is "Given 2 GeodesicLines, what is the closest
+CLLocationCoordinate2D intersection point of those lines?"
+
+*(Claude Opus 4.6)*
+
+Added a CoreLocation convenience API behind `#if canImport(CoreLocation)`:
+
+```swift
+public enum IntersectionResult {
+    case point(geodeticCoordinate: CLLocationCoordinate2D)
+    case parallel
+    case antiParallel
+}
+```
+
+Two `closestIntersection` methods (lat/lon/azi and `GeodesicLine` overloads)
+return this enum, encoding the coincidence indicator into the type system rather
+than a raw integer. For the `.point` case, `lineX.position(distance: point.x)`
+is evaluated to produce the coordinate.
+
+Three tests added:
+- `testClosestIntersectionCoordinate` — verifies `.point` coordinate matches
+  displacement-based result.
+- `testClosestIntersectionParallel` — two same-direction meridional lines
+  return `.parallel`.
+- `testClosestIntersectionAntiParallel` — opposite-direction meridional lines
+  return `.antiParallel`.
+
+Committed as `3886433`.
+
+---
+
+### Session 5 — 8 March 2026 (Claude Opus 4.6)
+
+Used **Claude Opus 4.6** via Claude Code.
+
+*(David Hart)*
+
+SwiftyGeographicLib looks like it should be sufficiently useful for me. Let's
+make sure the public functionality is comprehensively documented.
+
+*(Claude Opus 4.6)*
+
+#### Documentation audit and remediation
+
+Conducted a comprehensive audit of all public API surfaces. The core
+calculation modules (Geodesic, TransverseMercator, Intersect, MagneticModel,
+PolarStereographic) were already well documented. Gaps were found in
+supporting types. Files modified:
+
+| File | What was added |
+|---|---|
+| `MultiCoordinate.swift` | Doc comments on `MultiCoordinate`, `Geodetic`, `Cartesian` protocols and all requirements |
+| `Hemisphere.swift` | Enum and case docs |
+| `CoordinateError.swift` | Enum header doc |
+| `UTMCoordinate.swift` | Struct and property docs |
+| `UTMError.swift` | Enum header doc |
+| `ZoneSpec.swift` | Enum header doc, `rawValue` property doc |
+| `UPSCoordinate.swift` | Struct and property docs |
+| `UPS.swift` | `cartesianCoordinate` property doc |
+| `UTM.swift` | 6 forwarded property docs (hemisphere, zone, easting, northing, latitude, longitude) |
+| `MagneticModelError.swift` | Case-level docs for all 6 error cases |
+| `Math.swift` | `band(latitude:)` function doc |
+| `Intersect.swift` | `- Parameter` / `- Returns` markup on all 10 public methods |
+
+All 86 tests passed after changes.
+
+*(David Hart)*
+
+The prompt, responses, plan, and summary belong at the end of the top level
+DEVELOPMENT.md. We will also need a top level README.md with conventional api
+description, installation instructions, and usage examples.
+
+*(Claude Opus 4.6)*
+
+Appended session notes to `DEVELOPMENT.md` (this entry). Created `README.md`
+with API overview, installation instructions (Swift Package Manager), and usage
+examples for all modules.
+
+---
+
+## Session 6 — Remove SimpleGeographicLib
+
+*(David Hart)*
+
+SimpleGeographicLib was a development convenience. Let's consider removing it
+and fixing any dependency issues before going public.
+
+*(Claude Opus 4.6)*
+
+### What was `SimpleGeographicLib`
+
+A vendored subset of C++ GeographicLib source files (18 `.cpp` files + headers)
+compiled as a Swift package target. Used only by test targets via C++ interop
+(`.interoperabilityMode(.Cxx)`) to validate Swift implementations against C++
+reference outputs at runtime.
+
+*(David Hart - note:)* it is now apparent I could have used `#define private public`
+although I just learned that wouldn't work within the swift Package system. Claude 
+apparently used something like
+```c++
+c++ -std=c++20 -I/opt/homebrew/include -L/opt/homebrew/lib -lGeographicLib \
+    -Dprivate=public ref_values.cpp -o ref_values
+```
+to generate tests for internal c++ values - a trick that often works but violates
+the standard. I also learned from Claude that `@testable import` makes internal
+members accessible from test targets. Marking an import @testable was a convention I was previously only parroting.
+If I knew this before I would have directly accessed those internal values in my testing
+rather than creating a separate internal target system. In fact I think I will
+refactor to demonstrate this so that future readers of this code develop a better
+understanding of how this works.
+
+### Changes made
+
+**5 test files rewritten** to replace runtime C++ calls with hardcoded reference
+values from GeographicLib 2.7:
+
+| Test file | C++ symbols removed | Reference source |
+|---|---|---|
+| `MathTests.swift` | `GeographicLib.Math.*` | Known mathematical values |
+| `TransverseMercatorInternalTests.swift` | `GeographicLib.TransverseMercator.UTM().pointee` fields | C++ program accessing private fields |
+| `PolarStereographicInternalTests.swift` | `GeographicLib.PolarStereographic.UPS().pointee` fields | C++ program accessing private fields |
+| `PolarStereographicTests.swift` | `cppUPS.Forward()` / `.Reverse()` | C++ program, `PolarStereographic::UPS()` |
+| `UPSTests.swift` | `GeographicLib.UTMUPS.Forward()` / `.Reverse()` | C++ program, `UTMUPS::Forward/Reverse` |
+
+**Files deleted:**
+- `Tests/TransverseMercatorTests/CPPTransverseMercatorTests.swift` — entirely
+  commented out, no longer needed
+- `Sources/SimpleGeographicLib/` — entire directory (18 `.cpp` files + `include/`
+  headers)
+
+**`Measure.swift`** — removed commented-out `import SimpleGeographicLib` line.
+
+**`Package.swift`** — removed `SimpleGeographicLib` target definition, removed it
+from all 5 test target dependencies, removed all `.interoperabilityMode(.Cxx)`
+swift settings, cleaned up commented-out references in `TransverseMercatorTests`
+and `GeodesicTests`, removed `cxxLanguageStandard: .cxx20`.
+
+### Reference value generation
+
+Internal constants (TransverseMercatorInternal, PolarStereographicInternal) were
+obtained from a C++ program using `#define private public` to access private
+fields, compiled against system GeographicLib 2.7 at
+`/opt/homebrew/lib/libGeographicLib.dylib`.
+
+Forward/reverse projection reference values were obtained from a C++ program
+calling `UTMUPS::Forward/Reverse` and `PolarStereographic::UPS()` methods.
+
+All 85 tests passed after removal (26 XCTest + 59 Swift Testing). The package
+is now pure Swift with no C++ dependencies.
+
+---
+
+## Module Consolidation
+
+*(Claude Opus 4.6)*
+
+### Motivation
+
+As noted above (line 808–813), `@testable import` makes `internal` members
+accessible from test targets. The separate internal module pattern
+(`TransverseMercatorInternal`, `TransverseMercatorStatic`,
+`PolarStereographicInternal`) was originally needed so tests could validate
+internal computations from separate compilation units. With `@testable import`,
+the same access is available without the module split. Consolidation simplifies
+the module graph and gives future readers a clearer example of `@testable`
+usage.
+
+### Modules removed
+
+| Removed module | Absorbed into | Notes |
+|---|---|---|
+| `TransverseMercatorInternal` | `TransverseMercator` | 6 files moved; `public` → `internal` |
+| `TransverseMercatorStatic` | `TransverseMercator` | `InternalUTM.swift` moved; `public struct` → `struct` |
+| `StaticUTM` | `TransverseMercator` | `StaticUTM.swift` moved; stays `public struct` |
+| `PolarStereographicInternal` | `PolarStereographic` | Single function inlined; `public` → `internal` |
+
+### Visibility changes
+
+- `computeInternalTransverseMercator()` — `public` → `internal`
+- `_forward()` / `_reverse()` — `@inlinable public` → `internal` (cross-module
+  inlining unnecessary when caller and callee share a module)
+- `TransverseMercatorStaticInternal` protocol — `public` → `internal`
+- Protocol extensions (`Forward`, `Reverse`) — `public` → `internal`
+- `InternalUTM` struct and all its `static let` properties — `public` → `internal`
+- `polarStereographicInternal(flattening:)` — `public` → `internal`
+
+### Test consolidation
+
+- `TransverseMercatorInternalTests/initUTM()` → moved into
+  `TransverseMercatorTests.swift` (uses `@testable import TransverseMercator`)
+- `PolarStereographicInternalTests/test_PolarStereographicInternal()` → moved
+  into `PolarStereographicTests.swift` (uses `@testable import PolarStereographic`)
+- `Measure.swift` — simplified imports to `@testable import TransverseMercator`
+  and `import Math`
+
+### Package.swift changes
+
+- Removed 4 source targets: `TransverseMercatorInternal`,
+  `TransverseMercatorStatic`, `StaticUTM`, `PolarStereographicInternal`
+- Removed 2 test targets: `TransverseMercatorInternalTests`,
+  `PolarStereographicInternalTests`
+- Removed 2 products: `TransverseMercatorStatic`, `StaticUTM`
+- `TransverseMercator` dependencies updated: added `ComplexModule`, `RealModule`
+  (absorbed from `TransverseMercatorInternal`)
+- `UTM` dependencies simplified: removed `StaticUTM`,
+  `TransverseMercatorInternal`
+- `PolarStereographic` dependencies simplified: removed
+  `PolarStereographicInternal`
+
+### README.md
+
+`StaticUTM` row removed from module table; noted as part of
+`TransverseMercator`.
+
+### Verification
+
+All 85 tests passed (26 XCTest + 59 Swift Testing). No remaining references to
+removed module names in imports.
+
+---
+
+## Public Static Protocol
+
+*(David Hart)* — Renamed `TransverseMercatorStaticInternal` →
+`TransverseMercatorStaticProtocol` and made it `public`, along with its
+protocol extension methods (`forward`, `reverse`). This allows downstream
+consumers to define their own static transverse Mercator projections for
+custom ellipsoids.
+
+*(Claude Opus 4.6)*
+
+### Documentation updates
+
+- **`TransverseMercatorStaticProtocol.swift`** — Rewrote the protocol doc
+  comment: added Performance section explaining constant-folding, Default
+  Implementations section warning against re-implementation, and a Creating a
+  Conformance section with a complete example using
+  `computeInternalTransverseMercator`. Fixed stale `computeInternlTransverseMercator`
+  typo in the example.
+- **`TransverseMercatorInternal.swift`** — Made `computeInternalTransverseMercator`
+  `public` so downstream conformers can call it. Updated its doc comment to
+  reference `TransverseMercatorStaticProtocol` instead of
+  `TransverseMercatorStaticInternal`.
+- **`StaticUTM.swift`** — Updated two `TransverseMercatorStaticInternal` →
+  `TransverseMercatorStaticProtocol` references in doc comments.
+- **`_forward.swift`**, **`_reverse.swift`** — Updated doc comments to
+  reference `TransverseMercatorStaticProtocol`.
+
+All 85 tests passed.
 

@@ -11,7 +11,7 @@ import RealModule
 import Math
 
 
-public extension TransverseMercatorStaticInternal {
+public extension TransverseMercatorStaticProtocol {
     /// Forward projection, from geographic to transverse Mercator.
     ///
     /// This function converts a geographic coordinate (latitude and longitude) to

@@ -38,6 +38,7 @@ import Constants
 ///   to avoid negative coordinates. These must be subtracted to get the actual
 ///   polar stereographic coordinates.
 public struct UPS : MultiCoordinate {
+    /// The projected grid components: hemisphere, easting, and northing.
     public var cartesianCoordinate: UPSCoordinate
     
     /// The hemisphere (northern or southern) of the coordinate.

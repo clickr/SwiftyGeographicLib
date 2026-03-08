@@ -17,9 +17,8 @@ import Math
 /// 6th-order series, achieving ~5 nm accuracy within 35° of the central meridian.
 /// All ellipsoid parameters are passed explicitly so this single implementation can be
 /// shared between the dynamic `TransverseMercator` instance and any
-/// `TransverseMercatorStaticInternal` conformer without code duplication.
+/// ``TransverseMercatorStaticProtocol`` conformer without code duplication.
 ///
-/// Marked `@inlinable` so the compiler can inline the body at each call site across
 /// module boundaries. This allows constant-folding of `static let` parameter values
 /// (e.g. from `InternalUTM`) in the static code path, preserving the performance
 /// advantage of the static design.
@@ -46,8 +45,7 @@ import Math
 ///   - _alp: Krüger forward coefficients α₁–α₆; index 0 is unused.
 /// - Returns: Easting `x` and northing `y` in metres, meridian convergence γ in degrees,
 ///   and the scale factor at the projected point.
-@inlinable
-public func _forward(centralMeridian: Double,
+func _forward(centralMeridian: Double,
                     geodeticCoordinate: CLLocationCoordinate2D,
                     centralScale: Double,
                     _e2 : Double,

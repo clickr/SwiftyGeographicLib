@@ -9,7 +9,6 @@
 import Foundation
 import CoreLocation
 import ComplexModule
-import TransverseMercatorInternal
 import Math
 
 public extension TransverseMercator {

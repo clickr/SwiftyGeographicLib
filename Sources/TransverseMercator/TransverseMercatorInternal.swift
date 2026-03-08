@@ -105,8 +105,8 @@ internal func computeBet(x: Double) -> [Double] {
 
 /// Computes all derived ellipsoid parameters needed by the transverse Mercator projection.
 ///
-/// Call this once at construction time (for `TransverseMercator`) or at module-load time
-/// (for `TransverseMercatorStaticInternal` conformers). The returned values should be
+/// Call this once at construction time (for ``TransverseMercator``) or at module-load time
+/// (for ``TransverseMercatorStaticProtocol`` conformers). The returned values should be
 /// stored and forwarded to `_forward` / `_reverse` for each projection call.
 ///
 /// - Parameters:
