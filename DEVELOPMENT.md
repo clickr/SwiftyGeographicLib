@@ -529,3 +529,82 @@ Updated the `polyValue` doc comment in `Sources/Math/Math.swift`:
 ```
 
 Committed as `efba99e`.
+
+---
+
+- [x] TODO (David Hart): Refactor code duplication of TransverseMercator and TransverseMercatorStatic forward and reverse functions
+
+1. Make helper functions that additionaly take all the internal variables as parameters
+
+2. Move these into TransverseMercatorInternal as well as 
+
+3. Update TransverseMercator and TransverseMercatorStatic to call the helper functions instead of using their own code
+
+4. Test to confirm everything still works as before
+
+Done: 2026-03-08 14:51 UTC+8
+
+- [x] TODO (Claude): Add documentation to all TransverseMercatorInternal functions and append comments to this document on
+    my (David Hart's) refactor including any suggestions for improvement.
+
+*(Claude Opus 4.6)*
+
+#### What David did
+
+David created two new files in `TransverseMercatorInternal` — `_forward.swift` and
+`_reverse.swift` — each containing a single `@inlinable public` free function
+(`_forward(...)` and `_reverse(...)`) that takes all ellipsoid parameters as explicit
+arguments. Both `TransverseMercator+forward/reverse` (dynamic path) and the protocol
+extension `TransverseMercatorStaticInternal+Forward/Reverse` (static path) now delegate
+immediately to these helpers.
+
+He also moved `TransverseMercatorStaticInternal.swift` and its forward/reverse protocol
+extensions from the `TransverseMercatorStatic` module into `TransverseMercatorInternal`,
+so the protocol and the helpers it uses are co-located. The `TransverseMercatorStatic`
+module is now a thin leaf containing only `InternalUTM.swift`.
+
+Documentation was added to all `TransverseMercatorInternal` functions in this session
+(Claude Opus 4.6, 8 March 2026).
+
+#### What works well
+
+**`@inlinable` is exactly right here.** An `@inlinable` function makes its body
+available for cross-module inlining. At the `InternalUTM` call site, the compiler can
+see through the function signature and constant-fold the `static let` values — preserving
+the original performance advantage of the static design while eliminating the duplicate
+algorithm. This is the standard Swift library technique for this pattern (it's how
+`swift-collections` and `swift-numerics` handle their shared generic internals).
+
+**Co-locating protocol and helpers** in `TransverseMercatorInternal` is a good
+architectural move. The module now owns everything that has to be visible across the
+module boundary: the coefficient functions, the projection helpers, and the protocol
+that wires them together.
+
+#### Suggestions for improvement
+
+1. **Leading-underscore naming for public functions.** `_forward` and `_reverse` signal
+   "do not use directly" by convention, but they are `public` and therefore part of the
+   module's ABI. A clearer approach would be to place them in a caseless enum namespace
+   (e.g. `public enum TMCore { @inlinable public static func forward(...) }`) or, if
+   truly internal-only, to use the compiler attribute `@_alwaysEmitIntoClient` with
+   `internal` access — though that attribute is semi-private to the Swift compiler.
+   As-is the naming is a minor style issue with no correctness impact.
+
+2. **Spurious `import TransverseMercatorStatic` in `TransverseMercator+forward.swift`.**
+   The `_forward` function lives in `TransverseMercatorInternal`, which is already
+   imported in that file. The `TransverseMercatorStatic` import appears to be a leftover
+   from the refactoring session. It doesn't break the build (Package.swift was updated
+   to add the dependency), but it creates a coupling from `TransverseMercator` to
+   `TransverseMercatorStatic` that previously didn't exist and isn't actually needed.
+   Removing the import and the corresponding dependency from Package.swift would restore
+   the original module graph.
+
+3. **`computeB1` is called twice in `computeInternlTransverseMercator`.** The local
+   `let local_b1 = computeB1(x: local_n)` is computed on line 74, but the returned
+   tuple still calls `computeB1(x: local_n)` again for the `b1:` field rather than
+   reusing `local_b1`. This is a negligible cost (called only once at initialisation),
+   but `b1: local_b1` would be the tidier form.
+
+4. **Typo in `computeInternlTransverseMercator`.** "Internl" should be "Internal". This
+   predates the refactor and is present in the public API name, so fixing it would be a
+   source-breaking change unless a typealias is provided for backward compatibility.

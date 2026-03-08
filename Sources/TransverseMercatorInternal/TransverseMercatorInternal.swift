@@ -8,10 +8,39 @@
 import Foundation
 import Math
 
+/// Scale factor relating the conformal-sphere radius to the ellipsoid's equatorial radius.
+///
+/// `b1` satisfies `a1 = a * b1`, where `a1` is the radius of the conformal sphere on
+/// which the transverse Mercator series is evaluated and `a` is the equatorial radius.
+/// It is computed from the third flattening `n = f/(2-f)` as the 4th-order series:
+///
+/// ```
+/// b1 = (1 + n²/4 + n⁴/64) / (1 + n)
+/// ```
+///
+/// Reference: Karney (2011), eq. (12).
+///
+/// - Parameter x: Third flattening `n = f/(2−f)`.
+/// - Returns: `b1`, the conformal-sphere scale factor.
 internal func computeB1(x: Double) -> Double {
     let betaCoeffs : [Double] = [1, 4, 64, 256, 256,]
     return polyValue(withCoefficients: betaCoeffs, at: x * x) / (256.0 * (1.0 + x))
 }
+/// Krüger forward series coefficients α₁–α₆.
+///
+/// Returns the coefficients of the trigonometric series that maps from the conformal
+/// latitude (ξ′, η′) on the auxiliary sphere to the projected (ξ, η) plane.
+/// Each αₖ is a polynomial in the third flattening `n = f/(2-f)` of degree `7-k`,
+/// evaluated via `polyValue` (last element is the denominator).
+///
+/// The returned array has 7 elements: index 0 is always `0.0` (unused); indices 1–6
+/// hold α₁ through α₆.
+///
+/// Reference: Karney (2011), "Transverse Mercator with an accuracy of a few nanometers",
+/// Journal of Geodesy, eqs. (35) and (38).
+///
+/// - Parameter x: Third flattening `n = f/(2−f)`.
+/// - Returns: A 7-element array `[0, α₁, α₂, α₃, α₄, α₅, α₆]`.
 internal func computeAlp(x: Double) -> [Double] {
     var _x = x
     var res : [Double] = Array(repeating: 0, count: 7)
@@ -36,6 +65,20 @@ internal func computeAlp(x: Double) -> [Double] {
     return res
 }
 
+/// Krüger reverse series coefficients β₁–β₆.
+///
+/// Returns the coefficients of the trigonometric series that maps from the projected
+/// (ξ, η) plane back to the conformal latitude (ξ′, η′) on the auxiliary sphere.
+/// Each βₖ is a polynomial in the third flattening `n = f/(2-f)` of degree `7-k`,
+/// evaluated via `polyValue` (last element is the denominator).
+///
+/// The returned array has 7 elements: index 0 is always `0.0` (unused); indices 1–6
+/// hold β₁ through β₆.
+///
+/// Reference: Karney (2011), eqs. (35) and (39).
+///
+/// - Parameter x: Third flattening `n = f/(2−f)`.
+/// - Returns: A 7-element array `[0, β₁, β₂, β₃, β₄, β₅, β₆]`.
 internal func computeBet(x: Double) -> [Double] {
     var _x = x
     var res : [Double] = Array(repeating: 0, count: 7)
@@ -60,6 +103,25 @@ internal func computeBet(x: Double) -> [Double] {
     return res
 }
 
+/// Computes all derived ellipsoid parameters needed by the transverse Mercator projection.
+///
+/// Call this once at construction time (for `TransverseMercator`) or at module-load time
+/// (for `TransverseMercatorStaticInternal` conformers). The returned values should be
+/// stored and forwarded to `_forward` / `_reverse` for each projection call.
+///
+/// - Parameters:
+///   - flattening: The ellipsoid flattening `f = (a−b)/a`. Pass `0` for a sphere.
+///   - equatorialRadius: The semi-major axis `a` in metres.
+/// - Returns: A tuple of pre-computed projection parameters:
+///   - `n`:   Third flattening `n = f/(2−f)`.
+///   - `a1`:  Conformal-sphere radius in metres (`a × b1`).
+///   - `b1`:  Conformal-sphere scale factor (see `computeB1`).
+///   - `c`:   Polar scale factor `√(1−e²) · exp(eatanhe(1, es))`.
+///   - `e2`:  First eccentricity squared `e² = f(2−f)`.
+///   - `e2m`: Eccentricity complement `1 − e²`.
+///   - `es`:  Signed eccentricity `√|e²|`.
+///   - `alp`: Forward Krüger coefficients α₁–α₆ (see `computeAlp`).
+///   - `bet`: Reverse Krüger coefficients β₁–β₆ (see `computeBet`).
 public func computeInternlTransverseMercator(flattening: Double, equatorialRadius: Double) -> (
     n: Double,
     a1: Double,

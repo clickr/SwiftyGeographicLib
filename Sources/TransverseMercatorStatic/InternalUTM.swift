@@ -14,7 +14,7 @@ import Math
 public struct InternalUTM : TransverseMercatorStaticInternal {
     public static let EquatorialRadius : Double = 6378137.0
     public static let Flattening : Double = 1.0 / 298.257223563
-    public static let CentralScale : Double = 0.9996
+    public static let centralScale : Double = 0.9996
     public static let _e2 : Double = utmInt.e2
     public static let _es : Double = utmInt.es
     public static let _e2m : Double = utmInt.e2m
