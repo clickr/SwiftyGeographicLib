@@ -41,7 +41,7 @@ public enum TransverseMercatorError: Error, Equatable {
 /// ```swift
 /// let utm = TransverseMercator.UTM
 /// let coord = CLLocationCoordinate2D(latitude: 45.0, longitude: -75.0)
-/// let result = utm.forward(centralMeridian: -75, coordinate2D: coord)
+/// let result = utm.forward(centralMeridian: -75, geodeticCoordinate: coord)
 /// print("Easting: \\(result.x), Northing: \\(result.y)")
 /// ```
 public struct TransverseMercator : Sendable{
@@ -111,7 +111,7 @@ public struct TransverseMercator : Sendable{
     /// - Note: This is a convenience overload that accepts separate latitude and
     ///   longitude parameters instead of a `CLLocationCoordinate2D`.
     ///
-    /// - SeeAlso: ``forward(centralMeridian:coordinate2D:)-9d7s0``
+    /// - SeeAlso: ``forward(centralMeridian:geodeticCoordinate:)``
     public func forward(centralMeridian: Double, latitude: Double, longitude: Double) -> (x: Double, y: Double, convergence: Double, centralScale: Double) {
         return self.forward(centralMeridian: centralMeridian, geodeticCoordinate: .init(latitude: latitude, longitude: longitude))
     }

@@ -37,7 +37,7 @@ public extension TransverseMercator {
     /// - Note: No false easting or false northing is added. The longitude returned
     ///   is in the range [-180°, 180°].
     ///
-    /// - SeeAlso: ``forward(centralMeridian:coordinate2D:)-9d7s0``
+    /// - SeeAlso: ``forward(centralMeridian:geodeticCoordinate:)``
     func reverse(centralMeridian: Double,
                         x: Double,
                         y: Double) -> (coordinate: CLLocationCoordinate2D, convergence: Double, centralScale: Double) {

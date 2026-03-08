@@ -103,25 +103,25 @@ public struct Geodesic: Sendable {
     /// - Parameters:
     ///   - equatorialRadius: Equatorial radius in metres (must be positive).
     ///   - flattening: Flattening of the ellipsoid (0 for sphere, negative for prolate).
-    public init(equatorialRadius a: Double, flattening f: Double) {
+    public init(equatorialRadius: Double, flattening: Double) {
         let tol0 = Double.ulpOfOne
         let tol2 = sqrt(tol0)
 
-        self.equatorialRadius = a
-        self.flattening = f
-        self.f1 = 1 - f
-        self.e2 = f * (2 - f)
+        self.equatorialRadius = equatorialRadius
+        self.flattening = flattening
+        self.f1 = 1 - flattening
+        self.e2 = flattening * (2 - flattening)
         self.ep2 = e2 / (f1 * f1)
-        self.n = f / (2 - f)
-        self.b = a * f1
+        self.n = flattening / (2 - flattening)
+        self.b = equatorialRadius * f1
         // authalic radius²: (a² + b²·atanh(e)/e) / 2  for oblate (e2>0)
-        let aA = a * a
+        let aA = equatorialRadius * equatorialRadius
         let bB = b * b
         let eatanheVal: Double
         if e2 == 0 {
             eatanheVal = 1.0
         } else {
-            let esign: Double = f < 0 ? -1 : 1
+            let esign: Double = flattening < 0 ? -1 : 1
             let sqrtAbsE2 = sqrt(abs(e2))
             eatanheVal = eatanhe(1.0, esign * sqrtAbsE2) / e2
         }
@@ -137,8 +137,8 @@ public struct Geodesic: Sendable {
         self.maxit2 = Geodesic.maxit1 + Int(Double.significandBitCount) + 10
 
         // "really short" geodesic threshold
-        let fabs_f = abs(f)
-        self.etol2 = 0.1 * tol2 / sqrt(max(0.001, fabs_f) * min(1.0, 1 - f / 2) / 2)
+        let fabs_f = abs(flattening)
+        self.etol2 = 0.1 * tol2 / sqrt(max(0.001, fabs_f) * min(1.0, 1 - flattening / 2) / 2)
 
         // Initialise coefficient arrays (will be filled below)
         self.aA3x = [Double](repeating: 0, count: Geodesic.nA3x)

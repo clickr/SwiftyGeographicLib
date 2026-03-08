@@ -13,7 +13,7 @@ import Constants
 /// The projected grid components of a UPS coordinate.
 ///
 /// Groups the hemisphere, easting, and northing that identify a point on the
-/// Universal Polar Stereographic grid. This is the ``Cartesian`` half of a
+/// Universal Polar Stereographic grid. This is the `Cartesian` half of a
 /// ``UPS`` value.
 public struct UPSCoordinate : UTMUPSProtocol.Cartesian {
     /// The hemisphere (northern or southern pole).

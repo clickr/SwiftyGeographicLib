@@ -13,7 +13,7 @@ import UTMUPSProtocol
 /// The projected grid components of a UTM coordinate.
 ///
 /// Groups the zone, hemisphere, easting, and northing that identify a point
-/// on the UTM grid. This is the ``Cartesian`` half of a ``UTM`` value.
+/// on the UTM grid. This is the `Cartesian` half of a ``UTM`` value.
 public struct UTMCoordinate : Cartesian {
     /// The UTM zone number (1–60).
     public let zone: Int32

@@ -25,7 +25,7 @@ public extension TransverseMercator {
     /// - Parameters:
     ///   - centralMeridian: The central meridian of the projection in degrees.
     ///     This is the longitude at which the projection has no distortion.
-    ///   - coordinate2D: The geographic coordinate to convert.
+    ///   - geodeticCoordinate: The geographic coordinate to convert.
     ///
     /// - Returns: A tuple containing:
     ///   - x: The easting of the point in meters.
@@ -37,7 +37,7 @@ public extension TransverseMercator {
     /// - Note: No false easting or false northing is added. The latitude should
     ///   be in the range [-90°, 90°].
     ///
-    /// - SeeAlso: ``reverse(centralMeridian:x:y:)-7x4k4``
+    /// - SeeAlso: ``reverse(centralMeridian:x:y:)``
     func forward(centralMeridian: Double, geodeticCoordinate: CLLocationCoordinate2D) -> (x: Double, y: Double, convergence: Double, centralScale: Double) {
         return _forward(centralMeridian: centralMeridian, geodeticCoordinate: geodeticCoordinate,
                                                          centralScale: centralScale,

@@ -62,7 +62,7 @@ public enum ZoneSpec : OptionSet {
     /// A marker for an undefined or invalid zone.  Equivalent to .nan
     case invalid
     /// If a coordinate already include zone information (e.g., it is an MGRS
-    /// coordinate), use that, otherwise apply the ```ZoneSpec.standard``` rules.
+    /// coordinate), use that, otherwise apply the ``ZoneSpec/standard`` rules.
     case match
     /// Apply the standard rules for UTM zone assigment extending the UTM zone
     /// to each pole to give a zone number in [1, 60].  For example, use UTM

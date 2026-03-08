@@ -25,7 +25,7 @@ public extension TransverseMercatorStaticProtocol {
     /// - Parameters:
     ///   - centralMeridian: The central meridian of the projection in degrees.
     ///     This is the longitude at which the projection has no distortion.
-    ///   - coordinate2D: The geographic coordinate to convert.
+    ///   - geodeticCoordinate: The geographic coordinate to convert.
     ///
     /// - Returns: A tuple containing:
     ///   - x: The easting of the point in meters.
