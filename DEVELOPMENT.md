@@ -951,3 +951,61 @@ custom ellipsoids.
 
 All 85 tests passed.
 
+---
+
+## Repo Cleanup
+
+*(David Hart)* — Moved the `initUTM()` test to the top of
+`TransverseMercatorTests.swift`, restoring the original ordering where internal
+constant validation comes first before forward/reverse projection tests.
+
+*(Claude Opus 4.6)*
+
+### `opencode.json` removed
+
+Deleted `opencode.json` (local LM Studio configuration for OpenCode) — not
+relevant to the public repository.
+
+### README.md — Development section
+
+Added a `## Development` section near the top of `README.md` linking to
+`DEVELOPMENT.md`, placed between the introduction and the Modules table:
+
+> This library was developed collaboratively with AI assistance. The full
+> development history — including design discussions, implementation decisions,
+> and reference-value generation — is recorded in DEVELOPMENT.md.
+
+### `.swiftpm/` removed from repo and history
+
+The `.swiftpm/` directory (Xcode schemes, test plans, baselines) was tracked
+in git. The `.gitignore` was malformed — line 9 had a typo
+(`.swiftpm.swiftpm/*`) and line 11 had three entries concatenated on one line.
+
+**Steps taken:**
+
+1. Rewrote `.gitignore` to cleanly ignore `.swiftpm/`, `.claude/`, and other
+   IDE artifacts.
+2. Removed `.swiftpm/` from the index (`git rm -r --cached`).
+3. Installed `git-filter-repo` (`brew install git-filter-repo`).
+4. Ran `git filter-repo --path .swiftpm/ --invert-paths --path opencode.json
+   --invert-paths --force` to erase both paths from the entire 36-commit
+   history.
+5. Re-added the `origin` remote (filter-repo removes it as a safety measure)
+   and force-pushed.
+
+The repository history is now clean — neither `.swiftpm/` nor `opencode.json`
+appear in any commit.
+
+### `.gitignore` (final)
+
+```
+.DS_Store
+/.build
+/Packages
+xcuserdata/
+DerivedData/
+.swiftpm/
+.netrc
+.claude/
+```
+

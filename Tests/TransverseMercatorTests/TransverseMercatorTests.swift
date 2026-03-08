@@ -13,6 +13,42 @@ import Numerics
 
 let utmFalseEasting : Double = 5e5
 let utmNorthShift : Double = 1e7
+
+// WGS84 reference values from GeographicLib 2.7 (C++)
+// Generated via TransverseMercator::UTM() internal fields.
+// Accessible here via @testable import TransverseMercator.
+
+@Test func initUTM() {
+    let f = 1 / 298.257223563  // WGS84 flattening
+    let a = 6378137.0          // WGS84 semi-major axis
+    let internalUTM = computeInternalTransverseMercator(flattening: f, equatorialRadius: a)
+
+    #expect(internalUTM.n  == 1.67922038638370469e-03)
+    #expect(internalUTM.a1 == 6.36744914582341444e+06)
+    #expect(internalUTM.b1 == 9.98324298431252699e-01)
+    #expect(internalUTM.c  == 1.00335655524931533e+00)
+    #expect(internalUTM.e2 == 6.69437999014131646e-03)
+    #expect(internalUTM.e2m == 9.93305620009858670e-01)
+    #expect(internalUTM.es == 8.18191908426214864e-02)
+
+    let alp = internalUTM.alp
+    #expect(alp[1] == 8.37731820624469832e-04)
+    #expect(alp[2] == 7.60852777357230854e-07)
+    #expect(alp[3] == 1.19764550332945254e-09)
+    #expect(alp[4] == 2.42917060720135907e-12)
+    #expect(alp[5] == 5.71175767786580385e-15)
+    #expect(alp[6] == 1.49111773125838951e-17)
+
+    let bet = internalUTM.bet
+    #expect(bet[1] == 8.37732164057948645e-04)
+    #expect(bet[2] == 5.90587015222020260e-08)
+    #expect(bet[3] == 1.67348266528399683e-10)
+    #expect(bet[4] == 2.16479804006270561e-13)
+    #expect(bet[5] == 3.78797804616860576e-16)
+    #expect(bet[6] == 7.24874889069415449e-19)
+}
+
+
 /// ### TransverseMercator Tests
 /// The test data is obtained using the `GeoConvert` command line utility
 /// to get UTM coordinates from latitude and longitude
@@ -98,36 +134,3 @@ let utmNorthShift : Double = 1e7
     #expect(reverse.centralScale.isApproximatelyEqual(to: 0.999717683177112, absoluteTolerance: 1e-9))
 }
 
-// WGS84 reference values from GeographicLib 2.7 (C++)
-// Generated via TransverseMercator::UTM() internal fields.
-// Accessible here via @testable import TransverseMercator.
-
-@Test func initUTM() {
-    let f = 1 / 298.257223563  // WGS84 flattening
-    let a = 6378137.0          // WGS84 semi-major axis
-    let internalUTM = computeInternalTransverseMercator(flattening: f, equatorialRadius: a)
-
-    #expect(internalUTM.n  == 1.67922038638370469e-03)
-    #expect(internalUTM.a1 == 6.36744914582341444e+06)
-    #expect(internalUTM.b1 == 9.98324298431252699e-01)
-    #expect(internalUTM.c  == 1.00335655524931533e+00)
-    #expect(internalUTM.e2 == 6.69437999014131646e-03)
-    #expect(internalUTM.e2m == 9.93305620009858670e-01)
-    #expect(internalUTM.es == 8.18191908426214864e-02)
-
-    let alp = internalUTM.alp
-    #expect(alp[1] == 8.37731820624469832e-04)
-    #expect(alp[2] == 7.60852777357230854e-07)
-    #expect(alp[3] == 1.19764550332945254e-09)
-    #expect(alp[4] == 2.42917060720135907e-12)
-    #expect(alp[5] == 5.71175767786580385e-15)
-    #expect(alp[6] == 1.49111773125838951e-17)
-
-    let bet = internalUTM.bet
-    #expect(bet[1] == 8.37732164057948645e-04)
-    #expect(bet[2] == 5.90587015222020260e-08)
-    #expect(bet[3] == 1.67348266528399683e-10)
-    #expect(bet[4] == 2.16479804006270561e-13)
-    #expect(bet[5] == 3.78797804616860576e-16)
-    #expect(bet[6] == 7.24874889069415449e-19)
-}
