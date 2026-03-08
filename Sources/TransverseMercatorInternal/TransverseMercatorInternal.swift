@@ -122,7 +122,7 @@ internal func computeBet(x: Double) -> [Double] {
 ///   - `es`:  Signed eccentricity `√|e²|`.
 ///   - `alp`: Forward Krüger coefficients α₁–α₆ (see `computeAlp`).
 ///   - `bet`: Reverse Krüger coefficients β₁–β₆ (see `computeBet`).
-public func computeInternlTransverseMercator(flattening: Double, equatorialRadius: Double) -> (
+public func computeInternalTransverseMercator(flattening: Double, equatorialRadius: Double) -> (
     n: Double,
     a1: Double,
     b1: Double,
@@ -140,7 +140,7 @@ public func computeInternlTransverseMercator(flattening: Double, equatorialRadiu
             let local_c = sqrt(local_e2m) * exp(eatanhe(1.0, local_es))
             return (n: local_n,
                     a1: local_b1 * equatorialRadius,
-                    b1: computeB1(x: local_n),
+                    b1: local_b1,
                     c: local_c,
                     e2: local_e2,
                     e2m: local_e2m,

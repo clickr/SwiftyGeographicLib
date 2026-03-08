@@ -84,7 +84,7 @@ public struct TransverseMercator : Sendable{
          self.e2m,
          self.es,
          self.alp,
-         self.bet) = computeInternlTransverseMercator(flattening: flattening,
+         self.bet) = computeInternalTransverseMercator(flattening: flattening,
                                                       equatorialRadius: equatorialRadius)
         self.a = equatorialRadius
         self.f = flattening

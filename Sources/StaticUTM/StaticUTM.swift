@@ -115,6 +115,6 @@ public struct StaticUTM {
 
     /// The central scale factor applied along the central meridian (0.9996 for UTM).
     public static var centralScale: Double {
-        return InternalUTM.CentralScale
+        return InternalUTM.centralScale
     }
 }

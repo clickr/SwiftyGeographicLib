@@ -30,8 +30,6 @@ public struct InternalUTM : TransverseMercatorStaticInternal {
     )
 }
 
-
-
 public func computeInternlTransverseMercatorValues(flattening: Double, equatorialRadius: Double) -> (
     n: Double,
     a1: Double,
@@ -42,5 +40,5 @@ public func computeInternlTransverseMercatorValues(flattening: Double, equatoria
     es: Double,
     alp: [Double],
     bet: [Double]) {
-    return TransverseMercatorInternal.computeInternlTransverseMercator(flattening: flattening, equatorialRadius: equatorialRadius)
+    return TransverseMercatorInternal.computeInternalTransverseMercator(flattening: flattening, equatorialRadius: equatorialRadius)
 }

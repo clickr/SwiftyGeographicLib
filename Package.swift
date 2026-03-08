@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftGeoLib",
+    name: "SwiftyGeographicLib",
     platforms: [.macOS(.v15), .iOS(.v17)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -62,17 +62,23 @@ let package = Package(
         ),
         .target(
             name: "TransverseMercatorInternal",
-            dependencies: ["Math", .product(name: "ComplexModule", package: "swift-numerics")]
+            dependencies: [
+                "Math",
+                .product(name: "ComplexModule", package: "swift-numerics"),
+                .product(name: "RealModule", package: "swift-numerics")
+            ]
         ),
         .target(
             name: "TransverseMercatorStatic",
-            dependencies: ["Math", "TransverseMercatorInternal", .product(name: "ComplexModule", package: "swift-numerics")]
+            dependencies: ["Math", "TransverseMercatorInternal",
+                .product(name: "ComplexModule", package: "swift-numerics")]
         ),
         .target(
             name: "TransverseMercator",
             dependencies: [
                 "Math",
                 "TransverseMercatorInternal",
+                "TransverseMercatorStatic",
                 .product(name: "ComplexModule", package: "swift-numerics")]
         ),
         .target(

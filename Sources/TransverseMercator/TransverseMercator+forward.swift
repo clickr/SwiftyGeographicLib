@@ -40,89 +40,14 @@ public extension TransverseMercator {
     ///
     /// - SeeAlso: ``reverse(centralMeridian:x:y:)-7x4k4``
     func forward(centralMeridian: Double, geodeticCoordinate: CLLocationCoordinate2D) -> (x: Double, y: Double, convergence: Double, centralScale: Double) {
-        var lat = latFix(geodeticCoordinate.latitude)
-        var lon = angDiff(centralMeridian, geodeticCoordinate.longitude)
-        var latsign : Int = lat.sign == .minus ? -1 : 1
-        let lonsign : Int = lon.sign == .minus ? -1 : 1
-        lon *= Double(lonsign)
-        lat *= Double(latsign)
-        
-        let backside = lon > qd
-        if backside {
-            if lat == 0 {
-                latsign = -1
-            }
-            lon = hd - lon
-        }
-        var sphi, cphi : Double
-        (sphi, cphi) = sincosd(degrees: lat)
-        
-        var slam, clam : Double
-        (slam, clam) = sincosd(degrees: lon)
-        
-        var etap, xip : Double
-        var gamma: Double = .nan
-        var k: Double = .nan
-        if lat != qd {
-            let tau = sphi / cphi
-            let taup = taupf(tau, self.es)
-            xip = atan2(taup, clam)
-            etap = asinh(slam / hypot(taup, clam))
-            gamma = atan2d(slam * taup, clam * hypot(1.0, taup))
-            k = sqrt(self.e2m + self.e2 * sq(cphi)) * hypot(1.0, tau) / hypot(taup, clam)
-        } else {
-            xip = .pi / 2
-            etap = 0
-            gamma = lon
-            k = c
-        }
-        
-        let c0 = cos(2 * xip)
-        let ch0 = cosh(2 * etap)
-        let s0 = sin(2 * xip)
-        let sh0 = sinh(2 * etap)
-        
-        let aComplex = Complex<Double>(2 * c0 * ch0, -2 * s0 * sh0)
-        let n = alp.count - 1
-        var y0: Complex<Double> = (n & 1) == 1 ? Complex<Double>(alp[n], 0) : Complex<Double>(0, 0)
-        var y1: Complex<Double> = Complex<Double>(0, 0)
-        var z0: Complex<Double> = (n & 1) == 1 ? Complex<Double>(2 * Double(n) * alp[n], 0) : Complex<Double>(0, 0)
-        var z1: Complex<Double> = Complex<Double>(0, 0)
-        var nn = n
-        if (nn & 1) != 0 { nn -= 1 }
-        while nn > 0 {
-            y1 = aComplex * y0 - y1 + Complex<Double>(alp[nn], 0)
-            z1 = aComplex * z0 - z1 + Complex<Double>(2 * Double(nn) * alp[nn], 0)
-            nn -= 1
-            y0 = aComplex * y1 - y0 + Complex<Double>(alp[nn], 0)
-            z0 = aComplex * z1 - z0 + Complex<Double>(2 * Double(nn) * alp[nn], 0)
-            nn -= 1
-        }
-        var aDiv2 = aComplex / Complex<Double>(2, 0)
-        z1 = Complex<Double>(1, 0) - z1 + aDiv2 * z0
-        aDiv2 = Complex<Double>(s0 * ch0, c0 * sh0)
-        y1 = Complex<Double>(xip, etap) + aDiv2 * y0
-        
-        let xi = y1.real
-        let eta = y1.imaginary
-        
-        gamma -= atan2d(z1.imaginary, z1.real)
-        let z1Mag = sqrt(z1.real * z1.real + z1.imaginary * z1.imaginary)
-        k *= self.b1 * z1Mag
-        
-        let x = self.a1 * self.k0 * eta * Double(lonsign)
-        let y = self.a1 * self.k0 * (backside ? .pi - xi : xi) * Double(latsign)
-        
-        if backside {
-            gamma = hd - gamma
-        }
-        gamma *= Double(latsign * lonsign)
-        
-        while gamma > 180 { gamma -= 360 }
-        while gamma <= -180 { gamma += 360 }
-        
-        k *= self.k0
-        
-        return (x: x, y: y, convergence: gamma, centralScale: k)
+        return _forward(centralMeridian: centralMeridian, geodeticCoordinate: geodeticCoordinate,
+                                                         centralScale: centralScale,
+                                                         _e2: e2,
+                                                         _es: es,
+                                                         _e2m: e2m,
+                                                         _c: c,
+                                                         _b1: b1,
+                                                         _a1: a1,
+                                                         _alp: alp)
     }
 }

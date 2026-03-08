@@ -608,3 +608,12 @@ that wires them together.
 4. **Typo in `computeInternlTransverseMercator`.** "Internl" should be "Internal". This
    predates the refactor and is present in the public API name, so fixing it would be a
    source-breaking change unless a typealias is provided for backward compatibility.
+
+---
+
+- [x] TODO (David Hart):
+    1. Remove the spurious import
+    2. Reuse local_b1 in computeInternlTransverseMercator
+    3. Refactor computeInternlTransverseMercator to computeInternalTransverseMercator
+    4. Test
+Done: 2026-03-08 15:19 UTC+8

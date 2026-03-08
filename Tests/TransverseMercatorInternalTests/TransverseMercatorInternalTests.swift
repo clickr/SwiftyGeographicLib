@@ -13,7 +13,7 @@ import SimpleGeographicLib
 let utm = GeographicLib.TransverseMercator.UTM().pointee
 
 @Test func initUTM() {
-    let internalUTM = computeInternlTransverseMercator(flattening: utm.Flattening(), equatorialRadius: utm.EquatorialRadius())
+    let internalUTM = computeInternalTransverseMercator(flattening: utm.Flattening(), equatorialRadius: utm.EquatorialRadius())
 
     #expect(internalUTM.n == utm._n)
     #expect(internalUTM.a1 == utm._a1)

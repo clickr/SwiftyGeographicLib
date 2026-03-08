@@ -1,18 +1,15 @@
 //
-//  TransverseMercator+reverse.swift
+//  Reverse.swift
 //  SwiftGeoLib
 //
 //  Created by David Hart on 6/3/2026.
 //
-
-
 import Foundation
 import CoreLocation
 import ComplexModule
-import TransverseMercatorInternal
 import Math
 
-public extension TransverseMercator {
+public extension TransverseMercatorStaticInternal {
     /// Reverse projection, from transverse Mercator to geographic.
     ///
     /// This function converts transverse Mercator projection coordinates (easting,
@@ -38,10 +35,18 @@ public extension TransverseMercator {
     /// - Note: No false easting or false northing is added. The longitude returned
     ///   is in the range [-180°, 180°].
     ///
-    /// - SeeAlso: ``forward(centralMeridian:coordinate2D:)-9d7s0``
-    func reverse(centralMeridian: Double,
+    /// - SeeAlso: ``forward(centralMeridian:geodeticCoordinate:)``
+    static func reverse(centralMeridian: Double,
                         x: Double,
                         y: Double) -> (coordinate: CLLocationCoordinate2D, convergence: Double, centralScale: Double) {
-        return _reverse(centralMeridian: centralMeridian, x: x, y: y, centralScale: centralScale, _e2: e2, _es: es, _e2m: e2m, _c: c, _b1: b1, _a1: a1, _bet: bet)
+        return _reverse(centralMeridian: centralMeridian, x: x, y: y,
+                                                         centralScale: centralScale,
+                                                         _e2: _e2,
+                                                         _es: _es,
+                                                         _e2m: _e2m,
+                                                         _c: _c,
+                                                         _b1: _b1,
+                                                         _a1: _a1,
+                                                         _bet: _bet)
     }
 }
