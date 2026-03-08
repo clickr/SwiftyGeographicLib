@@ -424,3 +424,108 @@ Switch to **Opus** for:
 *(David Hart)*
 
 We will go with that. Append my prompt and the response to DEVELOPMENT.md and begin implementation.
+
+---
+
+### Session 3 — 8 March 2026 (Claude Opus 4.6)
+
+Used **Claude Opus 4.6** via Claude Code. The Geodesic port spanned three
+context windows; this entry summarises the complete implementation.
+
+#### What was built
+
+- **`Sources/Geodesic/`** — eight new source files constituting the `Geodesic`
+  library target:
+  - `Geodesic.swift` — `Geodesic` struct with ellipsoid constants, pre-computed
+    coefficient arrays (A3x, C3x, C4x), and `static let wgs84`.
+  - `GeodesicCoefficients.swift` — Maxima-generated series coefficient
+    functions (`a1m1f`, `a2m1f`, `c1f`, `c1pf`, `c2f`, `sinCosSeries`,
+    `lengths`, and the three `compute*coeff` helpers).
+  - `Geodesic+Direct.swift` — `direct(...)` public API and `genDirect`
+    internals.
+  - `Geodesic+Inverse.swift` — `inverse(...)` public API, `genInverse`,
+    `inverseStart`, `astroid`, and `lambda12`.
+  - `Geodesic+Line.swift` — factory methods `line(...)`, `directLine(...)`,
+    `inverseLine(...)`.
+  - `GeodesicLine.swift` — `GeodesicLine` struct and `lineInit`.
+  - `GeodesicLine+Position.swift` — `position(distance:)`, `arcPosition(arcLength:)`,
+    and `genPosition`.
+  - `GeodesicResult.swift` — `GeodesicPosition` and `GeodesicInverseResult`
+    result structs (all quantities, optionals for m12/M12/M21).
+
+- **`Tests/GeodesicTests/GeodesicTests.swift`** — 20 tests cross-checked
+  against `GeodSolve` reference values, covering the direct problem, inverse
+  problem, `GeodesicLine` positions, and round-trip consistency.
+
+- **`Package.swift`** updated to declare the `Geodesic` library product and
+  `GeodesicTests` test target (with `SimpleGeographicLib` dependency and
+  `.interoperabilityMode(.Cxx)` for C++ reference testing).
+
+#### Bugs found and fixed during implementation
+
+1. **`polyValue` used where `polyEval` was needed (11 call sites).**
+   `polyValue` calls `dropLast()` before evaluating — correct for
+   TransverseMercator where the last element is a divisor, but wrong for
+   Geodesic coefficient arrays where all elements are polynomial coefficients.
+   Fixed by adding `polyEval` to `Math` (evaluates all coefficients) and
+   replacing every Geodesic call site.
+
+2. **`sincosd` IEEE 754 F.10.1.13 copysign not implemented.**
+   For multiples of 180°, the quadrant-2 case returned `(-0.0, -1.0)` for the
+   sine. This caused `atan2d(-0, negative) = -180` instead of `+180`, producing
+   wrong azimuths on southbound meridional geodesics. Fixed by adding
+   `if sinx == 0 { sinx = copysign(sinx, degrees) }` post-processing (the
+   matching `cosx += 0` fix for zero cosine was already implied by the code
+   comment but is now explicit).
+
+3. **`lambda12` return value subtracted `slam120` from an angle.**
+   The original code returned `(lam12 - slam120, dlam12)`, subtracting
+   `sin(target_lambda)` (a dimensionless value) from `lam12` (an angle in
+   radians). Since `eta = atan2(...)` already incorporates the target longitude,
+   `lam12 = eta + domg12` is the residual directly. Fixed by returning
+   `(lam12, dlam12)`.
+
+4. **Inverse azimuth sign wrong when `swapp = -1` (points exchanged during
+   symmetry normalisation).**
+   The sign-restoration code `salp1 *= swapp * lonsign` applied `swapp = -1`
+   to the eastward sine component, negating it when it should not be. The
+   correct formula is `salp1 *= lonsign` (longitude-sign only); `swapp` applies
+   only to the `calp` (cosine/latitude) component. Fixed accordingly.
+
+#### Key technical observation
+
+The plan predicted the `polyValue` convention issue would be the main difficulty,
+and it was. All four bugs above were discovered only through running tests —
+they are not visible from a code-structure review alone. The 20-test suite
+against `GeodSolve` reference values was essential for locating and confirming
+each fix.
+
+---
+
+*(David Hart)*
+
+also update the documentation for polyValue to more clearly describe its
+non-standard result
+
+*(Claude Opus 4.6)*
+
+Updated the `polyValue` doc comment in `Sources/Math/Math.swift`:
+
+```swift
+/// Evaluate a polynomial using Horner's method, **dropping the last coefficient**.
+///
+/// The final element of `coefficients` is excluded from the evaluation. This
+/// exists for the TransverseMercator module where coefficient arrays store a
+/// divisor in their last position. For standard polynomial evaluation use
+/// ``polyEval(withCoefficients:at:)`` instead.
+///
+/// Coefficients are in **decreasing** power order (highest power first).
+///
+/// - Parameters:
+///   - coefficients: Polynomial coefficients with an extra trailing element
+///     that will be ignored.
+///   - x: The point at which to evaluate the polynomial.
+/// - Returns: The polynomial value at `x`, computed from all elements except the last.
+```
+
+Committed as `efba99e`.
