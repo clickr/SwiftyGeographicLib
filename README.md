@@ -6,6 +6,13 @@ field evaluation, ported from Charles Karney's
 
 No C++ runtime dependency. All arithmetic is native Swift.
 
+## Development
+
+This library was developed collaboratively with AI assistance. The full
+development history — including design discussions, implementation decisions,
+and reference-value generation — is recorded in
+[DEVELOPMENT.md](DEVELOPMENT.md).
+
 ## Modules
 
 | Module | Description |
