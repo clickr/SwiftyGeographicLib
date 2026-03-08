@@ -72,7 +72,7 @@ import Numerics
                 "Y mismatch at lat=\(tc.lat)")
         #expect(swift.Z.isApproximatelyEqual(to: tc.Z, absoluteTolerance: 1e-6),
                 "Z mismatch at lat=\(tc.lat)")
-
+        
         // Verify rotation matrix elements
         for i in 0..<9 {
             #expect(swift.M[i].isApproximatelyEqual(to: tc.M[i], absoluteTolerance: 1e-12),

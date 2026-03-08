@@ -774,3 +774,59 @@ extension Intersect {
         return results.map { ($0.x, $0.y, $0.c) }
     }
 }
+
+// MARK: - CoreLocation convenience API
+
+#if canImport(CoreLocation)
+import CoreLocation
+
+extension Intersect {
+
+    /// The result of a geodesic intersection query.
+    public enum IntersectionResult {
+        /// The geodesics cross at a point.
+        case point(geodeticCoordinate: CLLocationCoordinate2D)
+        /// The geodesics are coincident and run in the same direction.
+        case parallel
+        /// The geodesics are coincident and run in opposite directions.
+        case antiParallel
+    }
+
+    /// Find the closest intersection of two geodesic lines, returning a
+    /// geographic coordinate.
+    public func closestIntersection(
+        lineX: GeodesicLine, lineY: GeodesicLine,
+        offset: (x: Double, y: Double) = (0, 0)
+    ) -> IntersectionResult {
+        let p = closest(lineX: lineX, lineY: lineY, offset: offset)
+        return intersectionResult(from: p, along: lineX)
+    }
+
+    /// Find the closest intersection of two geodesics specified by position and
+    /// azimuth, returning a geographic coordinate.
+    public func closestIntersection(
+        latitudeX: Double, longitudeX: Double, azimuthX: Double,
+        latitudeY: Double, longitudeY: Double, azimuthY: Double,
+        offset: (x: Double, y: Double) = (0, 0)
+    ) -> IntersectionResult {
+        let lineX = geodesic.line(latitude: latitudeX, longitude: longitudeX,
+                                  azimuth: azimuthX)
+        let lineY = geodesic.line(latitude: latitudeY, longitude: longitudeY,
+                                  azimuth: azimuthY)
+        return closestIntersection(lineX: lineX, lineY: lineY, offset: offset)
+    }
+
+    private func intersectionResult(
+        from point: Point, along line: GeodesicLine
+    ) -> IntersectionResult {
+        switch point.c {
+        case 1: return .parallel
+        case -1: return .antiParallel
+        default:
+            let pos = line.position(distance: point.x)
+            return .point(geodeticCoordinate: CLLocationCoordinate2D(
+                latitude: pos.latitude, longitude: pos.longitude))
+        }
+    }
+}
+#endif

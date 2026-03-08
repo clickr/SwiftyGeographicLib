@@ -123,7 +123,7 @@ let package = Package(
             name: "IntersectTests",
             dependencies: ["Intersect",
                            "Geodesic",
-                          ]
+                           .product(name: "Numerics", package: "swift-numerics")]
         ),
         .testTarget(
             name: "MathTests",

@@ -6,6 +6,7 @@
 //
 
 import Testing
+import Numerics
 @testable import Intersect
 import Geodesic
 
@@ -19,44 +20,30 @@ import Geodesic
     #expect(inter.f == 1.0 / 298.257223563)
 
     // authalic radius
-    let rRRef = 6371007.1809184738
-    #expect(abs(inter.rR - rRRef) < 1e-6)
+    #expect(inter.rR.isApproximatelyEqual(to: 6371007.1809184738, relativeTolerance: 1e-12))
 
     // d = pi * rR
-    let dRef = 20015109.355541296
-    #expect(abs(inter.d - dRef) < 1e-4)
+    #expect(inter.d.isApproximatelyEqual(to: 20015109.355541296, relativeTolerance: 1e-12))
 
     // eps, tol, delta — exact formulas
     #expect(inter.eps == 3 * Double.ulpOfOne)
-    let tolRef = 3.6407271828541154e-05
-    #expect(abs(inter.tol - tolRef) / tolRef < 1e-10)
-    let deltaRef = 14813.101968120698
-    #expect(abs(inter.delta - deltaRef) / deltaRef < 1e-10)
+    #expect(inter.tol.isApproximatelyEqual(to: 3.6407271828541154e-05, relativeTolerance: 1e-10))
+    #expect(inter.delta.isApproximatelyEqual(to: 14813.101968120698, relativeTolerance: 1e-10))
 
     // t1–t5 and d1–d3
-    let t1Ref = 19970326.371122573
-    let t2Ref = 20071056.447180964
-    let t3Ref = 20020723.578508016
-    let t4Ref = 19970326.371122573
-    let t5Ref = 20003931.458625447
-    let d1Ref = 10035528.223590482
-    let d2Ref = 13347149.052338677
-    let d3Ref = 19955513.269154452
-
-    #expect(abs(inter.t1 - t1Ref) / t1Ref < 1e-9)
-    #expect(abs(inter.t2 - t2Ref) / t2Ref < 1e-9)
-    #expect(abs(inter.t3 - t3Ref) / t3Ref < 1e-9)
-    #expect(abs(inter.t4 - t4Ref) / t4Ref < 1e-9)
-    #expect(abs(inter.t5 - t5Ref) / t5Ref < 1e-9)
-    #expect(abs(inter.d1 - d1Ref) / d1Ref < 1e-9)
-    #expect(abs(inter.d2 - d2Ref) / d2Ref < 1e-9)
-    #expect(abs(inter.d3 - d3Ref) / d3Ref < 1e-9)
+    #expect(inter.t1.isApproximatelyEqual(to: 19970326.371122573, relativeTolerance: 1e-9))
+    #expect(inter.t2.isApproximatelyEqual(to: 20071056.447180964, relativeTolerance: 1e-9))
+    #expect(inter.t3.isApproximatelyEqual(to: 20020723.578508016, relativeTolerance: 1e-9))
+    #expect(inter.t4.isApproximatelyEqual(to: 19970326.371122573, relativeTolerance: 1e-9))
+    #expect(inter.t5.isApproximatelyEqual(to: 20003931.458625447, relativeTolerance: 1e-9))
+    #expect(inter.d1.isApproximatelyEqual(to: 10035528.223590482, relativeTolerance: 1e-9))
+    #expect(inter.d2.isApproximatelyEqual(to: 13347149.052338677, relativeTolerance: 1e-9))
+    #expect(inter.d3.isApproximatelyEqual(to: 19955513.269154452, relativeTolerance: 1e-9))
 }
 
 @Test func testEllipsoidArea() {
     let geod = Geodesic.wgs84
-    let areaRef = 510065621724088.44
-    #expect(abs(geod.ellipsoidArea - areaRef) / areaRef < 1e-12)
+    #expect(geod.ellipsoidArea.isApproximatelyEqual(to: 510065621724088.44, relativeTolerance: 1e-12))
 }
 
 // Reference values from IntersectTool (GeographicLib 2.7):
@@ -71,15 +58,15 @@ import Geodesic
     let p1 = inter.closest(
         latitudeX: 0, longitudeX: 0, azimuthX: 45,
         latitudeY: 1, longitudeY: 2, azimuthY: 135)
-    #expect(abs(p1.x - 235587.31869382600) < 0.01)
-    #expect(abs(p1.y - (-79191.64043588734)) < 0.01)
+    #expect(p1.x.isApproximatelyEqual(to: 235587.31869382600, absoluteTolerance: 0.01))
+    #expect(p1.y.isApproximatelyEqual(to: -79191.64043588734, absoluteTolerance: 0.01))
     #expect(p1.c == 0)
 
     let p2 = inter.closest(
         latitudeX: 40, longitudeX: -75, azimuthX: 30,
         latitudeY: 45, longitudeY: -80, azimuthY: 310)
-    #expect(abs(p2.x - 144727.45943665525) < 0.01)
-    #expect(abs(p2.y - (-642534.08692900557)) < 0.01)
+    #expect(p2.x.isApproximatelyEqual(to: 144727.45943665525, absoluteTolerance: 0.01))
+    #expect(p2.y.isApproximatelyEqual(to: -642534.08692900557, absoluteTolerance: 0.01))
     #expect(p2.c == 0)
 }
 
@@ -93,8 +80,8 @@ import Geodesic
     let p = inter.next(
         latitude: 0, longitude: 0,
         azimuthX: 45, azimuthY: 135)
-    #expect(abs(p.x - (-19987139.5000006)) < 0.1)
-    #expect(abs(p.y - (-19987139.5000006)) < 0.1)
+    #expect(p.x.isApproximatelyEqual(to: -19987139.5000006, absoluteTolerance: 0.1))
+    #expect(p.y.isApproximatelyEqual(to: -19987139.5000006, absoluteTolerance: 0.1))
     #expect(p.c == 0)
 }
 
@@ -113,8 +100,8 @@ import Geodesic
         latitudeX2: 0, longitudeX2: 1,
         latitudeY1: -1, longitudeY1: 0,
         latitudeY2: 1, longitudeY2: 0)
-    #expect(abs(r1.point.x - 111319.49079327355) < 0.01)
-    #expect(abs(r1.point.y - 110574.38855779878) < 0.01)
+    #expect(r1.point.x.isApproximatelyEqual(to: 111319.49079327355, absoluteTolerance: 0.01))
+    #expect(r1.point.y.isApproximatelyEqual(to: 110574.38855779878, absoluteTolerance: 0.01))
     #expect(r1.point.c == 0)
     #expect(r1.segmentMode == 0)
 
@@ -124,8 +111,8 @@ import Geodesic
         latitudeX2: 50, longitudeX2: -70,
         latitudeY1: 35, longitudeY1: -80,
         latitudeY2: 45, longitudeY2: -60)
-    #expect(abs(r2.point.x - (-286064.12203504320)) < 0.01)
-    #expect(abs(r2.point.y - 457605.29710917058) < 0.01)
+    #expect(r2.point.x.isApproximatelyEqual(to: -286064.12203504320, absoluteTolerance: 0.01))
+    #expect(r2.point.y.isApproximatelyEqual(to: 457605.29710917058, absoluteTolerance: 0.01))
     #expect(r2.point.c == 0)
     #expect(r2.segmentMode == -3)
 }
@@ -142,7 +129,34 @@ import Geodesic
         latitudeY: 1, longitudeY: 2, azimuthY: 135,
         maxDistance: 1_000_000)
     #expect(pts.count == 1)
-    #expect(abs(pts[0].x - 235587.31869382600) < 0.01)
-    #expect(abs(pts[0].y - (-79191.64043588734)) < 0.01)
+    #expect(pts[0].x.isApproximatelyEqual(to: 235587.31869382600, absoluteTolerance: 0.01))
+    #expect(pts[0].y.isApproximatelyEqual(to: -79191.64043588734, absoluteTolerance: 0.01))
     #expect(pts[0].c == 0)
 }
+
+#if canImport(CoreLocation)
+import CoreLocation
+
+// Verify closestIntersection returns a CLLocationCoordinate2D consistent with
+// the displacement-based closest() result.
+@Test func testClosestIntersectionCoordinate() {
+    let geod = Geodesic.wgs84
+    let inter = Intersect(geodesic: geod)
+
+    let lineX = geod.line(latitude: 0, longitude: 0, azimuth: 45)
+    let lineY = geod.line(latitude: 1, longitude: 2, azimuth: 135)
+
+    let result = inter.closestIntersection(lineX: lineX, lineY: lineY)
+
+    guard case .point(let coord) = result else {
+        Issue.record("Expected .point, got \(result)")
+        return
+    }
+
+    // Cross-check: evaluate lineX at the displacement from closest()
+    let p = inter.closest(lineX: lineX, lineY: lineY)
+    let pos = lineX.position(distance: p.x)
+    #expect(coord.latitude.isApproximatelyEqual(to: pos.latitude, absoluteTolerance: 1e-12))
+    #expect(coord.longitude.isApproximatelyEqual(to: pos.longitude, absoluteTolerance: 1e-12))
+}
+#endif
