@@ -61,9 +61,9 @@ public struct Geodesic: Sendable {
     // MARK: - Ellipsoid parameters
 
     /// Equatorial radius in metres.
-    public let a: Double
+    public let equatorialRadius: Double
     /// Flattening of the ellipsoid. Negative for prolate.
-    public let f: Double
+    public let flattening: Double
 
     let f1: Double    // 1 - f
     let e2: Double    // f*(2-f), square of first eccentricity
@@ -100,8 +100,8 @@ public struct Geodesic: Sendable {
         let tol0 = Double.ulpOfOne
         let tol2 = sqrt(tol0)
 
-        self.a = a
-        self.f = f
+        self.equatorialRadius = a
+        self.flattening = f
         self.f1 = 1 - f
         self.e2 = f * (2 - f)
         self.ep2 = e2 / (f1 * f1)

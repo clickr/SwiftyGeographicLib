@@ -95,8 +95,8 @@ public struct GeodesicLine: Sendable {
         }
 
         self.tiny = g.tiny
-        self.a = g.a
-        self.f = g.f
+        self.a = g.equatorialRadius
+        self.f = g.flattening
         self.b = g.b
         self.c2 = g.c2
         self.f1 = g.f1
@@ -166,7 +166,7 @@ public struct GeodesicLine: Sendable {
         // C3 series, aA3c, B31
         let cC3a = g.c3f(eps)
         self.cC3a = cC3a
-        self.aA3c = -g.f * salp0 * g.a3f(eps)
+        self.aA3c = -g.flattening * salp0 * g.a3f(eps)
         self.bB31 = Geodesic.sinCosSeries(sinSeries: true, sinx: self.ssig1, cosx: self.csig1,
                                            c: cC3a, n: Geodesic.nC3 - 1)
 

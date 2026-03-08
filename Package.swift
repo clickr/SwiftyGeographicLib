@@ -19,7 +19,7 @@ let package = Package(
         .library(
             name: "UTM",
             targets: ["UTM"]
-            ),
+        ),
         .library(
             name: "PolarStereographic",
             targets: ["PolarStereographic"]
@@ -52,6 +52,10 @@ let package = Package(
         .target(
             name: "GeographicError"
         ),
+        .target(name: "Intersect",
+                dependencies: ["Geodesic", "IntersectInternal"]),
+        .target(name: "IntersectInternal",
+                dependencies: ["Geodesic"]),
         .target(
             name: "PolarStereographic",
             dependencies: ["Math", "PolarStereographicInternal"]
@@ -71,7 +75,7 @@ let package = Package(
         .target(
             name: "TransverseMercatorStatic",
             dependencies: ["Math", "TransverseMercatorInternal",
-                .product(name: "ComplexModule", package: "swift-numerics")]
+                           .product(name: "ComplexModule", package: "swift-numerics")]
         ),
         .target(
             name: "TransverseMercator",
@@ -118,6 +122,15 @@ let package = Package(
             name: "Math"
         ),
         .testTarget(
+            name: "IntersectTests",
+            dependencies: ["Intersect",
+                           "SimpleGeographicLib",
+                           "Geodesic",
+                           .product(name: "Numerics", package: "swift-numerics"),
+                          ],
+            swiftSettings: [.interoperabilityMode(.Cxx)]
+        ),
+        .testTarget(
             name: "MathTests",
             dependencies: ["Math", "SimpleGeographicLib"],
             swiftSettings: [.interoperabilityMode(.Cxx)]),
@@ -140,11 +153,11 @@ let package = Package(
             dependencies: ["TransverseMercator",
                            "TransverseMercatorStatic",
                            "StaticUTM",
-                           "SimpleGeographicLib",
+                           //                           "SimpleGeographicLib",
                            "Math",
                            "TransverseMercatorInternal",
                            .product(name: "Numerics", package: "swift-numerics")],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
+            //            swiftSettings: [.interoperabilityMode(.Cxx)]
         ),
         .testTarget(
             name: "TransverseMercatorInternalTests",
@@ -189,9 +202,9 @@ let package = Package(
             name: "GeodesicTests",
             dependencies: [
                 "Geodesic",
-                "SimpleGeographicLib",
+                //                "SimpleGeographicLib",
                 .product(name: "Numerics", package: "swift-numerics")],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
+            //            swiftSettings: [.interoperabilityMode(.Cxx)]
         )
     ],
     cxxLanguageStandard: .cxx20

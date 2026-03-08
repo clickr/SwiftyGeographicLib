@@ -144,9 +144,9 @@ public extension Geodesic {
         }
 
         // Equatorial case
-        if !meridian && sbet1n == 0 && (f <= 0 || lon12sSupp >= f * hd) {
+        if !meridian && sbet1n == 0 && (flattening <= 0 || lon12sSupp >= flattening * hd) {
             calp1 = 0; calp2 = 0; salp1 = 1; salp2 = 1
-            s12x = a * lam12
+            s12x = equatorialRadius * lam12
             sig12 = lam12 / f1
             m12x = b * sin(sig12)
             M12 = cos(sig12); M21 = M12
@@ -337,10 +337,10 @@ public extension Geodesic {
             // Scale to antipodal coordinate system and use astroid
             let lam12x = atan2(-slam12, -clam12)
             var lamscale: Double, betscale: Double, x: Double, y: Double
-            if f >= 0 {
+            if flattening >= 0 {
                 let k2 = sq(sbet1) * ep2
                 let epsA = k2 / (2 * (1 + sqrt(1 + k2)) + k2)
-                lamscale = f * cbet1 * a3f(epsA) * .pi
+                lamscale = flattening * cbet1 * a3f(epsA) * .pi
                 betscale = lamscale * cbet1
                 x = lam12x / lamscale
                 y = sbet12a / betscale
@@ -354,13 +354,13 @@ public extension Geodesic {
                                  wantDistance: false, wantReducedLength: true, wantScale: false,
                                  ca: &ca)
                 x = -1 + rr.m12b / (cbet1 * cbet2 * rr.m0 * .pi)
-                betscale = x < -0.01 ? sbet12a / x : -f * sq(cbet1) * .pi
+                betscale = x < -0.01 ? sbet12a / x : -flattening * sq(cbet1) * .pi
                 lamscale = betscale / cbet1
                 y = lam12x / lamscale
             }
 
             if y > -tol1 && x > -1 - xthresh {
-                if f >= 0 {
+                if flattening >= 0 {
                     salp1 = min(1.0, -x); calp1 = -sqrt(1 - sq(salp1))
                 } else {
                     calp1 = max(x > -tol1 ? 0.0 : -1.0, x)
@@ -368,7 +368,7 @@ public extension Geodesic {
                 }
             } else {
                 let k = Geodesic.astroid(x: x, y: y)
-                let omg12a = lamscale * (f >= 0 ? -x * k / (1 + k) : -y * (1 + k) / k)
+                let omg12a = lamscale * (flattening >= 0 ? -x * k / (1 + k) : -y * (1 + k) / k)
                 somg12 = sin(omg12a); comg12 = -cos(omg12a)
                 salp1 = cbet2 * somg12
                 calp1 = sbet12a - cbet2 * sbet1 * sq(somg12) / (1 - comg12)
@@ -449,7 +449,7 @@ public extension Geodesic {
                                            c: cC3a, n: Geodesic.nC3 - 1)
                     - Geodesic.sinCosSeries(sinSeries: true, sinx: ssig1, cosx: csig1,
                                             c: cC3a, n: Geodesic.nC3 - 1))
-        domg12 = -f * a3f(eps) * salp0 * (sig12 + B312)
+        domg12 = -flattening * a3f(eps) * salp0 * (sig12 + B312)
         let lam12 = eta + domg12
 
         var dlam12 = 0.0

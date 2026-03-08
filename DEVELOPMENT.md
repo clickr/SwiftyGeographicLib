@@ -1,6 +1,6 @@
-# SwiftGeoLib Development Notes
+# SwiftyGeographicLib Development Notes
 
-This document records how SwiftGeoLib was developed, including the use of AI
+This document records how SwiftyGeographicLib was developed, including the use of AI
 assistants at various stages. It is intended as a transparent record for
 contributors and anyone curious about the process. David Hart will add his own
 recollections of earlier development below.
@@ -9,7 +9,7 @@ recollections of earlier development below.
 
 ## Project overview
 
-SwiftGeoLib is a pure Swift library providing geographic coordinate
+SwiftyGeographicLib is a pure Swift library providing geographic coordinate
 transformations and geomagnetic field evaluation, ported from Charles Karney's
 [GeographicLib](https://geographiclib.sourceforge.io) C++ library.
 
@@ -636,3 +636,5 @@ Committed as `1d1e5e1` — "Fix three minor issues flagged in code review":
   from `Package.swift`.
 
 All 53 tests passed before committing.
+
+
