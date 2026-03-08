@@ -23,11 +23,20 @@ import CoreLocation
 @inline(__always) func rad2deg(_ radians: Double) -> Double {
     return radians * 180.0 / .pi
 }
-/// Calculate a polynomial
+/// Evaluate a polynomial using Horner's method, **dropping the last coefficient**.
 ///
-/// Uses Horner's method as referenced
-/// [Rosetta Code](https://rosettacode.org/wiki/Horner%27s_rule_for_polynomial_evaluation#Swift)
-/// except coefficients are for increasing powers of x and the final term is ignored (intended to be used in further calculations)
+/// The final element of `coefficients` is excluded from the evaluation. This
+/// exists for the TransverseMercator module where coefficient arrays store a
+/// divisor in their last position. For standard polynomial evaluation use
+/// ``polyEval(withCoefficients:at:)`` instead.
+///
+/// Coefficients are in **decreasing** power order (highest power first).
+///
+/// - Parameters:
+///   - coefficients: Polynomial coefficients with an extra trailing element
+///     that will be ignored.
+///   - x: The point at which to evaluate the polynomial.
+/// - Returns: The polynomial value at `x`, computed from all elements except the last.
 ///
 @available(macOS 10.15, *)
 public func polyValue(withCoefficients coefficients: [Double], at x: Double) -> Double {
