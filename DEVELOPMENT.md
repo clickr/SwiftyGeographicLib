@@ -1009,3 +1009,75 @@ DerivedData/
 .claude/
 ```
 
+---
+
+## Initial Release, DocC Documentation, and Further Cleanup
+
+*(Claude Sonnet 4.5)*
+
+### `CPPConstants` removed
+
+`Sources/CPPConstants/include/Constants.hpp` was a leftover C++ header from
+the original GeographicLib port — it had no references in any Swift source or
+in `Package.swift` and was entirely superseded by the Swift `Constants` module.
+Deleted the directory. Build confirmed clean.
+
+### GitHub repository and Initial Release (v1.0.0)
+
+- Created and pushed git tag `v1.0.0`.
+- Created GitHub Release titled "Initial Release" using `gh release create`
+  with a markdown release note covering all seven modules, accuracy, modularity,
+  CoreLocation integration, `TransverseMercatorStaticProtocol`, Swift 6.2
+  concurrency, and bundled WMM2025.
+- `RELEASE_NOTES_v1.0.0.md` written locally for reference (not committed;
+  added `/docs/` and kept it out of version control).
+- Tag subsequently force-updated to `HEAD` twice as post-release cleanup
+  commits were made (CPPConstants removal, DocC commit).
+
+### DocC documentation
+
+Added `swift-docc-plugin` (v1.4.6) as a package dependency. This enables:
+- **Product → Build Documentation** directly in Xcode
+- `swift package generate-documentation` from the command line
+
+Also exposed `Intersect` as a public library product (it was a target but
+not listed in `products`).
+
+Ran `swift package generate-documentation` for all seven public targets:
+Geodesic, Intersect, TransverseMercator, UTM, PolarStereographic, UPS,
+MagneticModel. Archives land in
+`.build/plugins/Swift-DocC/outputs/intermediates/` and can be copied to
+`docs/` locally for import into Xcode via Window → Developer Documentation.
+The `docs/` directory is excluded from version control via `.gitignore`.
+
+### DocC warning fixes
+
+The documentation build surfaced a number of stale or incorrect doc comments,
+all resolved:
+
+- **`Geodesic.swift`** — `init(equatorialRadius a:, flattening f:)` renamed to
+  `init(equatorialRadius:, flattening:)` (matching external/internal names) so
+  DocC can resolve parameter documentation. The init body updated throughout
+  to use `equatorialRadius` and `flattening` in place of `a` and `f`.
+- **`TransverseMercator+forward.swift`** — stale `coordinate2D` parameter name
+  in doc comment updated to `geodeticCoordinate`; stale `-7x4k4`
+  disambiguation suffix removed from `SeeAlso` link.
+- **`TransverseMercator+reverse.swift`** — stale `forward(centralMeridian:coordinate2D:)-9d7s0`
+  link updated to `forward(centralMeridian:geodeticCoordinate:)`.
+- **`TransverseMercator.swift`** — same stale link fixed; `coordinate2D`
+  updated to `geodeticCoordinate` in the usage example in the type doc comment.
+- **`TransverseMercatorStatic+Forward.swift`** — `coordinate2D` updated to
+  `geodeticCoordinate`.
+- **`UTMCoordinate.swift`**, **`UPSCoordinate.swift`** — `Cartesian` is defined
+  in `UTMUPSProtocol` and cannot be resolved as a DocC link from a different
+  module; changed from `\`\`Cartesian\`\`` to `` `Cartesian` `` (inline code).
+- **`ZoneSpec.swift`** — triple-backtick ` ```ZoneSpec.standard``` ` corrected
+  to DocC double-backtick `\`\`ZoneSpec/standard\`\``.
+
+All seven modules build documentation with zero warnings after these fixes.
+
+### `.gitignore` updated
+
+Added `/docs/` to exclude generated `.doccarchive` bundles from version
+control.
+
