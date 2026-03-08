@@ -8,3 +8,4 @@ DerivedData/
 .netrc
 .swiftpm.swiftpm/*
 .claude/*
+.swiftpm/configuration .swiftpm/GeographicLibDev.xctestplan .swiftpm/xcode
