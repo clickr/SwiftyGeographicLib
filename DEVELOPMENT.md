@@ -617,3 +617,22 @@ that wires them together.
     3. Refactor computeInternlTransverseMercator to computeInternalTransverseMercator
     4. Test
 Done: 2026-03-08 15:19 UTC+8
+
+*(David Hart)*
+
+I actioned items 2, 3, and 4. XCode made refactoring
+`computeInternlTransverseMercator` easy. Please commit the changes.
+
+*(Claude Opus 4.6)*
+
+Committed as `1d1e5e1` — "Fix three minor issues flagged in code review":
+
+- Renamed `computeInternlTransverseMercator` → `computeInternalTransverseMercator`
+  (Xcode rename refactor; all call sites updated automatically).
+- Reused `local_b1` in `computeInternalTransverseMercator` instead of calling
+  `computeB1` a second time.
+- Removed spurious `import TransverseMercatorStatic` from
+  `TransverseMercator+forward.swift` and dropped the now-unnecessary dependency
+  from `Package.swift`.
+
+All 53 tests passed before committing.
