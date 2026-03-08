@@ -36,6 +36,10 @@ let package = Package(
             name: "MagneticModel",
             targets: ["MagneticModel"]
         ),
+        .library(
+            name: "Geodesic",
+            targets: ["Geodesic"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.0")],
@@ -170,6 +174,18 @@ let package = Package(
             dependencies: [
                 "MagneticModel",
                 .product(name: "Numerics", package: "swift-numerics")]
+        ),
+        .target(
+            name: "Geodesic",
+            dependencies: ["Math"]
+        ),
+        .testTarget(
+            name: "GeodesicTests",
+            dependencies: [
+                "Geodesic",
+                "SimpleGeographicLib",
+                .product(name: "Numerics", package: "swift-numerics")],
+            swiftSettings: [.interoperabilityMode(.Cxx)]
         )
     ],
     cxxLanguageStandard: .cxx20

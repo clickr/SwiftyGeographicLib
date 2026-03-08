@@ -32,9 +32,24 @@ import CoreLocation
 @available(macOS 10.15, *)
 public func polyValue(withCoefficients coefficients: [Double], at x: Double) -> Double {
     guard coefficients.count > 0 else { return 0 }
-    return coefficients.dropLast().reduce(0) {
+    return coefficients.dropLast().reduce(0.0) {
         return ($0 * x + $1)
     }
+}
+
+/// Evaluate a polynomial using Horner's method, using **all** supplied coefficients.
+///
+/// Unlike `polyValue`, no element is dropped.
+/// Coefficients are in **decreasing** power order (first element = coefficient of the
+/// highest power).  This matches the ordering produced by GeographicLib's Maxima-generated
+/// coefficient tables.
+///
+/// - Parameters:
+///   - coefficients: Polynomial coefficients, highest-power first.
+///   - x: The point at which to evaluate the polynomial.
+/// - Returns: The polynomial value at `x`.
+public func polyEval(withCoefficients coefficients: [Double], at x: Double) -> Double {
+    return coefficients.reduce(0.0) { $0 * x + $1 }
 }
 
 /// A collection of mathematical constants and utility functions for geographic calculations.
@@ -185,21 +200,27 @@ public func sincosd(degrees: Double) -> (sin: Double, cos: Double) {
     // Adjust the sign/order of the results according to the original quadrant.
     // The C++ code uses `unsigned(q) & 3U` – in Swift we cast `q` to UInt and mask with 3.
     let quadrantMask = UInt(bitPattern: q) & 3
-    
+
+    var sinx: Double
+    var cosx: Double
     switch quadrantMask {
     case 0:
         // Quadrant 0: sin =  s, cos =  c
-        return (s, c)
+        sinx =  s; cosx =  c
     case 1:
         // Quadrant 1: sin =  c, cos = -s
-        return (c, -s)
+        sinx =  c; cosx = -s
     case 2:
         // Quadrant 2: sin = -s, cos = -c
-        return (-s, -c)
+        sinx = -s; cosx = -c
     default: // case 3
         // Quadrant 3: sin = -c, cos =  s
-        return (-c, s)
+        sinx = -c; cosx =  s
     }
+    // Per IEEE 754 F.10.1.12–13: ensure +0 for zero cosine; sign of zero sine matches input.
+    cosx += 0
+    if sinx == 0 { sinx = copysign(sinx, degrees) }
+    return (sinx, cosx)
 }
 
 /// Swift Implementation of GeographicLib::Math::eatanhe
@@ -404,6 +425,129 @@ public func tauf(_ taup: Double, _ es: Double) -> Double {
 public func angNormalize(_ x: Double) -> Double {
     let y = remainder(x, td)
     return fabs(y) == hd ? copysign(hd, x) : y
+}
+
+/// Swift implementation of GeographicLib::Math::sum (Knuth two-sum).
+///
+/// Returns s = u + v exactly and sets t to the round-off error such that
+/// s + t == u + v to infinite precision.  The `volatile` qualifier in the
+/// C++ source exists to prevent the compiler from collapsing the arithmetic;
+/// Swift's IEEE-754 semantics make that unnecessary here.
+///
+/// C++ Code:
+/// ```cpp
+/// template<typename T> T Math::sum(T u, T v, T& t) {
+///   volatile T s = u + v, up = s - v, vpp = s - up;
+///   up -= u; vpp -= v;
+///   t = s != 0 ? -(up + vpp) : s;
+///   return s;
+/// }
+/// ```
+@inline(__always) func mathSum(_ u: Double, _ v: Double) -> (s: Double, t: Double) {
+    let s = u + v
+    let up = s - v
+    let vpp = s - up
+    let t: Double = s != 0 ? -((up - u) + (vpp - v)) : s
+    return (s, t)
+}
+
+/// Exact angle difference of two angles, also returning the round-off error.
+///
+/// Returns (d, e) where d is the principal difference in (−180°, 180°] and
+/// e is the error such that the true difference equals d + e (with |e| much
+/// smaller than ulp(d)).
+///
+/// C++ Code:
+/// ```cpp
+/// template<typename T> T Math::AngDiff(T x, T y, T& e) {
+///   T d = sum(remainder(-x,td), remainder(y,td), e);
+///   d = sum(remainder(d,td), e, e);
+///   if (d == 0 || fabs(d) == hd)
+///     d = copysign(d, e == 0 ? y - x : -e);
+///   return d;
+/// }
+/// ```
+public func angDiffWithError(_ x: Double, _ y: Double) -> (d: Double, e: Double) {
+    var (d, e) = mathSum(remainder(-x, td), remainder(y, td))
+    let s2: Double
+    (d, s2) = mathSum(remainder(d, td), e)
+    let e2 = s2
+    var df = d
+    if df == 0 || abs(df) == hd {
+        df = copysign(df, e2 == 0 ? y - x : -e2)
+    }
+    return (df, e2)
+}
+
+/// Swift implementation of GeographicLib::Math::AngRound
+///
+/// Coarsens a value close to zero so that near-zero inputs are not treated
+/// as essentially zero. The smallest non-zero gap for doubles is 1/2^57 ≈ 7 pm
+/// on the Earth (for angles in degrees). The sign of ±0 is preserved.
+///
+/// C++ Code:
+/// ```cpp
+/// template<typename T> T Math::AngRound(T x) {
+///   static const T z = T(1)/T(16);
+///   GEOGRAPHICLIB_VOLATILE T y = fabs(x);
+///   GEOGRAPHICLIB_VOLATILE T w = z - y;
+///   y = w > 0 ? z - w : y;
+///   return copysign(y, x);
+/// }
+/// ```
+public func angRound(_ x: Double) -> Double {
+    let z: Double = 1.0 / 16.0
+    let y = abs(x)
+    let w = z - y
+    let yr = w > 0 ? z - w : y
+    return copysign(yr, x)
+}
+
+/// Swift implementation of GeographicLib::Math::sincosde
+///
+/// Evaluates sin and cos of (x + t) where x is in [-180°, 180°] and t is a small
+/// correction. AngRound is applied to the reduced angle to prevent problems with
+/// x + t being extremely close but not exactly equal to a cardinal direction.
+///
+/// C++ Code:
+/// ```cpp
+/// template<typename T> void Math::sincosde(T x, T t, T& sinx, T& cosx) {
+///   int q = 0;
+///   T d = AngRound(remquo(x, T(qd), &q) + t),
+///     r = d * degree<T>();
+///   T s = sin(r), c = cos(r);
+///   if (2 * fabs(d) == qd) { c = sqrt(1/T(2)); s = copysign(c, r); }
+///   else if (3 * fabs(d) == qd) { c = sqrt(T(3))/2; s = copysign(1/T(2), r); }
+///   switch (unsigned(q) & 3U) {
+///   case 0U: sinx =  s; cosx =  c; break;
+///   case 1U: sinx =  c; cosx = -s; break;
+///   case 2U: sinx = -s; cosx = -c; break;
+///   default: sinx = -c; cosx =  s; break;
+///   }
+/// }
+/// ```
+public func sincosde(_ x: Double, _ t: Double) -> (sin: Double, cos: Double) {
+    var qi: Int = 0
+    let rem: Double
+    (rem, qi) = remquo(x, qd)
+    let d = angRound(rem + t)
+    let r = d * Math.degree
+    var s = sin(r)
+    var c = cos(r)
+    if 2.0 * abs(d) == qd {
+        c = sqrt(0.5)
+        s = copysign(sqrt(0.5), r)
+    } else if 3.0 * abs(d) == qd {
+        c = sqrt(3.0) / 2.0
+        s = copysign(0.5, r)
+    }
+    let quadrantMask = UInt(bitPattern: qi) & 3
+    switch quadrantMask {
+    case 0: return (s, c)
+    case 1: return (c, -s)
+    case 2: return (-s, -c)
+    default: return (-c, s)
+    }
 }
 
 public func band(latitude: Double) -> Int {

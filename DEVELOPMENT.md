@@ -398,3 +398,29 @@ A/C coefficient arrays. Paying careful attention to the indexing in
 interdependent quantities. The C++ passes these all by reference. In Swift
 they will become a small internal state struct or a large tuple, updated each
 iteration. This is manageable but requires careful mechanical translation.
+
+---
+
+### Model selection for Geodesic implementation
+
+*(David Hart)*
+
+Do we need to use Opus for this or will Sonnet do?
+
+*(Claude Opus 4.6)*
+
+For most of the Geodesic port, Sonnet should be fine:
+
+- **Phase 1 (coefficient functions and `SinCosSeries`)**: These are essentially mechanical transcriptions of the Maxima-generated C++ coefficients. The real challenge here is getting the `polyValue` indexing right, not reasoning about novel algorithms. Sonnet handles repetitive-but-precise transcription tasks well.
+- **Phase 2 (`Lengths` and `genDirect`)**: Straightforward arithmetic porting with no deep algorithmic novelty. Sonnet is fine here too.
+
+Switch to **Opus** for:
+
+- **Phase 4 (`Lambda12` and `genInverse`)**: The Newton's method loop with bracketing, the `InverseStart` astroid calculation, and the many interdependent mutated variables are the hardest part of the port. The C++ passes 10+ quantities by reference across the loop; translating that cleanly to Swift tuples or a state struct while preserving the numerical semantics is where the extra reasoning capacity of Opus pays off.
+- **Phase 5 (`GeodesicLine`)**: The line precomputation is moderately complex but should be fine with Sonnet. The `GenPosition` function is more intricate — consider Opus there too.
+
+**Recommendation**: Start with Sonnet and switch to Opus when you hit `Lambda12`. No point paying for Opus on the coefficient transcription.
+
+*(David Hart)*
+
+We will go with that. Append my prompt and the response to DEVELOPMENT.md and begin implementation.
