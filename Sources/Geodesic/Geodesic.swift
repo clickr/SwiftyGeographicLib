@@ -82,6 +82,13 @@ public struct Geodesic: Sendable {
     /// Coefficients for C4 series (size nC4x = 21).
     var cC4x: [Double]
 
+    // MARK: - Derived ellipsoid properties
+
+    /// Total area of the ellipsoid in square metres.
+    ///
+    /// Corresponds to `Geodesic::EllipsoidArea()` in the GeographicLib C++ API.
+    public var ellipsoidArea: Double { 4 * .pi * c2 }
+
     // MARK: - Standard instances
 
     /// The WGS84 ellipsoid (a = 6378137 m, f = 1/298.257223563).

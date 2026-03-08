@@ -53,9 +53,7 @@ let package = Package(
             name: "GeographicError"
         ),
         .target(name: "Intersect",
-                dependencies: ["Geodesic", "IntersectInternal"]),
-        .target(name: "IntersectInternal",
-                dependencies: ["Geodesic"]),
+                dependencies: ["Geodesic", "Math"]),
         .target(
             name: "PolarStereographic",
             dependencies: ["Math", "PolarStereographicInternal"]
@@ -124,11 +122,8 @@ let package = Package(
         .testTarget(
             name: "IntersectTests",
             dependencies: ["Intersect",
-                           "SimpleGeographicLib",
                            "Geodesic",
-                           .product(name: "Numerics", package: "swift-numerics"),
-                          ],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
+                          ]
         ),
         .testTarget(
             name: "MathTests",

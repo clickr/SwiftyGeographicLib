@@ -260,10 +260,82 @@ GeographicLib via Homebrew — `man IntersectTool`). For internal values
 
 ### Prerequisites check
 
-- [ ] `Geodesic` exposes `ellipsoidArea` — **needs adding** (`c2` is internal)
-- [x] `GeodesicLine.genPosition` returns `m12`, `M12`, `M21` — **already
-  available** via `reducedLength`, `geodesicScale12`, `geodesicScale21` on
+- [x] `Geodesic` exposes `ellipsoidArea` — added as `public var ellipsoidArea`
+- [x] `GeodesicLine.genPosition` returns `m12`, `M12`, `M21` — already
+  available via `reducedLength`, `geodesicScale12`, `geodesicScale21` on
   `GeodesicPosition`
 - [x] `IntersectTool` is installed — **GeographicLib 2.7** at
   `/opt/homebrew/bin/IntersectTool`
+
+---
+
+## Implementation Session
+
+*(Claude Opus 4.6)*
+
+### Changes made
+
+**`Geodesic.swift`** — Added `public var ellipsoidArea: Double { 4 * .pi * c2 }`
+computed property to `Geodesic`, matching the C++ `Geodesic::EllipsoidArea()`.
+
+**`Package.swift`** — Removed the `IntersectInternal` target. Changed
+`Intersect` dependencies to `["Geodesic", "Math"]` and `IntersectTests`
+dependencies to `["Intersect", "Geodesic"]` (dropped `SimpleGeographicLib`
+and C++ interop settings).
+
+**`Sources/IntersectInternal/`** — Deleted; contents collapsed into `Intersect`.
+
+**`Sources/Intersect/Intersect.swift`** — Complete rewrite. Contains:
+
+- `Point` struct (x, y, c) bundling displacements and coincidence indicator
+- Constructor computing all 15 ellipsoid-derived constants (a, f, rR, d, eps,
+  tol, delta, t1–t5, d1–d3) matching C++ reference values to ~1e-9
+- Constructor helpers as `static` methods: `conjugateDist`, `distpolar`,
+  `polarb`, `conjdist`, `distoblique`
+- Layer 1–2: `spherical` (initial spherical triangle solution) and `basic`
+  (Newton refinement)
+- Layer 3: `closestInt` (5-point grid), `nextInt` (8-point grid), `segmentInt`
+  (segment with corner checking), `allInt0` (tiled search with deduplication)
+- Layer 4: Public API — `closest`, `next`, `segment`, `all`, each with
+  lat/lon/azi and `GeodesicLine` overloads
+- Helpers: `fixcoincident`, `fixsegment`, `segmentmode`
+- Internal `XP` struct for array-based set deduplication in `allInt0`
+
+The `segment(lineX:lineY:)` GeodesicLine overload is not yet implemented
+because `GeodesicLine` does not expose `s13` / `distance`. The lat/lon
+overload computes segment lengths via `geodesic.inverse()`.
+
+**`Tests/IntersectTests/IntersectTests.swift`** — Complete rewrite with 6 tests:
+
+| Test | What it verifies |
+|---|---|
+| `testConstructorConstants` | All 15 constructor constants vs C++ reference values |
+| `testEllipsoidArea` | `Geodesic.ellipsoidArea` |
+| `testClosest` | Two `closest()` cases vs IntersectTool |
+| `testNext` | `next()` vs IntersectTool |
+| `testSegment` | Two `segment()` cases (intersecting k=0 and non-intersecting k=-3) |
+| `testAll` | `all()` within 1000 km vs IntersectTool |
+
+### Reference value generation
+
+Constructor constants were obtained from a C++ program using `#define private
+public` to access `Intersect` internals, compiled against system GeographicLib
+2.7 (`/opt/homebrew/lib/libGeographicLib.dylib`).
+
+End-to-end values were obtained from `IntersectTool`:
+- `IntersectTool -c` for closest
+- `IntersectTool -n` for next
+- `IntersectTool -i` for segment
+- `IntersectTool -R maxdist` for all
+
+### Design notes
+
+- All algorithmic functions (`spherical`, `basic`, `conjugateDist`, etc.) are
+  `static` methods taking their dependencies as parameters, following the same
+  pattern used in the Geodesic module. Instance methods (`closestInt`, `nextInt`,
+  etc.) capture `self` for the pre-computed constants.
+- The C++ `std::set<XPoint, SetComp>` in `AllInt0` was replaced with a simple
+  array + linear scan using delta-equality. This is O(n²) in the number of
+  intersections but n is tiny in practice.
+- Diagnostic counters (`cnt0`–`cnt4`) were omitted as agreed.
 
