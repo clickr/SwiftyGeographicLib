@@ -9,11 +9,11 @@
 import Testing
 @testable import TransverseMercator
 import Numerics
+import Ellipsoid
 
 @Test func testTransverseMercatorCustomForward_wgs60WashingtonDC() throws {
     let tm = try TransverseMercator(
-        equatorialRadius: 6378165.0,
-        flattening: 3.35232986925913497e-03,
+        ellipsoid: .wgs60,
         scaleFactor: 0.9996)
     let forward = tm.forward(centralMeridian: -75, latitude: 38.8977, longitude: -77.0365)
     #expect(forward.x.isApproximatelyEqual(to: -1.76606445416749833e+05, absoluteTolerance: 1e-9))
@@ -24,8 +24,7 @@ import Numerics
 
 @Test func testTransverseMercatorCustomReverse_wgs60WashingtonDC() throws {
     let tm = try TransverseMercator(
-        equatorialRadius: 6378165.0,
-        flattening: 3.35232986925913497e-03,
+        ellipsoid: .wgs60,
         scaleFactor: 0.9996)
     let reverse = tm.reverse(centralMeridian: -75, x: -1.76606445416749833e+05, y: 4.30741782763011660e+06)
     #expect(reverse.coordinate.latitude.isApproximatelyEqual(to: 38.8977, absoluteTolerance: 1e-9))

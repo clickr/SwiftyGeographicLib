@@ -7,6 +7,7 @@
 import Foundation
 import Math
 import CoreLocation
+import Ellipsoid
 
 /// A polar stereographic projection implementation.
 ///
@@ -57,6 +58,18 @@ public struct PolarStereographic: Sendable {
         self.centralScale = centralScaleFactor
 
         (e2, es, e2m, c) = polarStereographicInternal(flattening: flattening)
+    }
+
+    /// Creates a polar stereographic projection for the given ellipsoid.
+    ///
+    /// - Parameters:
+    ///   - ellipsoid: The reference ellipsoid defining the Earth model.
+    ///   - centralScaleFactor: The central scale factor at the pole.
+    public init(ellipsoid: Ellipsoid, centralScaleFactor: Double) {
+        self.init(
+            equatorialRadius: ellipsoid.equatorialRadius,
+            flattening: ellipsoid.flattening,
+            centralScaleFactor: centralScaleFactor)
     }
     
     /// Swift implementation of GeographicLib::PolarStereographic::Forward
@@ -139,8 +152,7 @@ public struct PolarStereographic: Sendable {
     /// This is a convenience static property that creates a PolarStereographic
     /// projection with WGS84 parameters and the standard UPS scale factor (0.994).
     public static let UPS: PolarStereographic = PolarStereographic(
-        equatorialRadius: 6378137.0,
-        flattening: 1.0 / 298.257223563,
+        ellipsoid: .wgs84,
         centralScaleFactor: 0.994)
 }
 

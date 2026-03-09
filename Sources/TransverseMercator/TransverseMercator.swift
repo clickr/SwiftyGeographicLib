@@ -5,6 +5,7 @@ import Foundation
 import CoreLocation
 import ComplexModule
 import Math
+import Ellipsoid
 
 public enum TransverseMercatorError: Error, Equatable {
     case equatorialRadiusNotPositive
@@ -46,8 +47,7 @@ public enum TransverseMercatorError: Error, Equatable {
 /// ```
 public struct TransverseMercator : Sendable{
     public static let UTM : TransverseMercator = try! TransverseMercator(
-        equatorialRadius: 6378137.0,
-        flattening: 1.0 / 298.257223563,
+        ellipsoid: .wgs84,
         scaleFactor: 0.9996)
     public var flattening: Double { f }
     public var equatorialRadius: Double { a }
@@ -89,9 +89,19 @@ public struct TransverseMercator : Sendable{
         self.f = flattening
         self.k0 = scaleFactor
     }
-    
-    
-    
+
+    /// Creates a transverse Mercator projection for the given ellipsoid.
+    ///
+    /// - Parameters:
+    ///   - ellipsoid: The reference ellipsoid defining the Earth model.
+    ///   - scaleFactor: The central scale factor (e.g. 0.9996 for UTM).
+    public init(ellipsoid: Ellipsoid, scaleFactor: Double) throws (TransverseMercatorError) {
+        try self.init(
+            equatorialRadius: ellipsoid.equatorialRadius,
+            flattening: ellipsoid.flattening,
+            scaleFactor: scaleFactor)
+    }
+
     /// Forward projection, from geographic to transverse Mercator.
     ///
     /// This function converts a geographic coordinate (latitude and longitude) to
