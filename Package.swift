@@ -36,6 +36,10 @@ let package = Package(
             name: "Intersect",
             targets: ["Intersect"]
         ),
+        .library(
+            name: "Ellipsoid",
+            targets: ["Ellipsoid"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.0"),
@@ -48,18 +52,22 @@ let package = Package(
             name: "Constants"
         ),
         .target(
+            name: "Ellipsoid"
+        ),
+        .target(
             name: "GeographicError"
         ),
         .target(name: "Intersect",
                 dependencies: ["Geodesic", "Math"]),
         .target(
             name: "PolarStereographic",
-            dependencies: ["Math"]
+            dependencies: ["Math", "Ellipsoid"]
         ),
         .target(
             name: "TransverseMercator",
             dependencies: [
                 "Math",
+                "Ellipsoid",
                 .product(name: "ComplexModule", package: "swift-numerics"),
                 .product(name: "RealModule", package: "swift-numerics")]
         ),
@@ -95,12 +103,14 @@ let package = Package(
         .testTarget(
             name: "PolarStereographicTests",
             dependencies: ["PolarStereographic",
+                           "Ellipsoid",
                            .product(name: "Numerics", package: "swift-numerics")]
         ),
         .testTarget(
             name: "TransverseMercatorTests",
             dependencies: ["TransverseMercator",
                            "Math",
+                           "Ellipsoid",
                            .product(name: "Numerics", package: "swift-numerics")]
         ),
         .testTarget(
