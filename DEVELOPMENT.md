@@ -31,6 +31,7 @@ transformations and geomagnetic field evaluation, ported from Charles Karney's
 | **MagneticModel** | Geomagnetic field evaluation (WMM, IGRF, EMM) |
 | **Geodesic** | Geodesic problem (direct/inverse) on the ellipsoid, line positions |
 | **Intersect** | Intersections of geodesics on an ellipsoid |
+| **Rhumb** | Rhumb line (loxodrome) solver: direct, inverse, and line positions |
 | **SimpleGeographicLib** | Vendored C++ GeographicLib subset (test-only reference) |
 
 ---
@@ -1151,4 +1152,55 @@ Each `.cpp` file contains build/run instructions in its header comment. All
 require GeographicLib installed via Homebrew (`brew install geographiclib`);
 the magnetic generator additionally requires WMM2025 data. All output was
 verified to match the hardcoded Swift test values exactly.
+
+### Session 8 — 10 March 2026 (Claude Opus 4.6)
+
+#### Rhumb module
+
+> *"Add Rhumb and RhumbLine modules to SwiftyGeographicLib, porting
+> GeographicLib's C++ Rhumb and RhumbLine classes to Swift."*
+> *(David Hart)*
+
+Port of GeographicLib's `Rhumb`, `RhumbLine`, `AuxLatitude`, `DAuxLatitude`
+classes to Swift. Series-only implementation (order 6, no `exact` mode),
+accurate to ~10 nm for WGS84. Single `Rhumb` library target depending only
+on `Math`.
+
+Seven source files created: `AuxAngle.swift`, `AuxLatitudeCoefficients.swift`,
+`AuxLatitude.swift`, `DAuxLatitude.swift`, `Rhumb.swift`, `RhumbLine.swift`,
+`RhumbResult.swift`. See
+[Sources/Rhumb/DEVELOPMENT.md](Sources/Rhumb/DEVELOPMENT.md).
+
+**Package.swift** updated: added `Rhumb` library product, target (depends on
+`Math`), and `RhumbTests` test target.
+
+Two bugs found and fixed:
+1. **Thread safety** — `AuxLatitude._c` coefficient cache was lazily mutated
+   without synchronisation, causing concurrent test crashes. Fixed by eagerly
+   pre-computing all 30 conversion pairs in `init()`.
+2. **Anti-meridian crossing** — `angDiff(170, -170)` returned −340 instead of
+   +20 due to a missing reduction step in the simple `angDiff` function. Fixed
+   by using `angDiffWithError` in `Rhumb.inverse()`.
+
+**Tests:** 22 new tests in 6 suites, all passing. Full suite: **104 tests**
+(82 existing + 22 new), all passing. Reference values from `RhumbSolve` CLI.
+
+#### `angDiff` fix (Math module)
+
+*(Claude Opus 4.6)*
+
+The simple `angDiff(_:_:)` in `Math.swift` used `truncatingRemainder` without
+a second reduction step — a latent bug producing out-of-range results when
+`|y − x| > 180°`. The C++ `Math::AngDiff` always delegates to the full
+two-sum algorithm. Fixed `angDiff` to delegate to `angDiffWithError`, matching
+the C++ pattern. The only other call site (TransverseMercator) was safe in
+practice (longitude differences are always small) but is now correct for all
+inputs.
+
+#### README and release
+
+*(Claude Opus 4.6)*
+
+Updated `README.md` with Rhumb module: table entry, usage example, accuracy
+note, and rhumb polygon area paper in acknowledgements.
 

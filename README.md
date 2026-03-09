@@ -24,6 +24,7 @@ and reference-value generation — is recorded in
 | **PolarStereographic** | Polar Stereographic projection |
 | **UPS** | Universal Polar Stereographic projection |
 | **MagneticModel** | Geomagnetic field evaluation (WMM, IGRF, EMM) |
+| **Rhumb** | Solve the direct and inverse rhumb-line (loxodrome) problems; compute positions along a rhumb line |
 | **Isogonic** | Contour lines of constant magnetic field properties (declination, inclination, intensity) over a geographic region |
 | **Ellipsoid** | Predefined reference ellipsoids (WGS 84, GRS 80, Clarke 1866, etc.) for use with TransverseMercator |
 
@@ -125,6 +126,36 @@ case .parallel:
     print("Lines are parallel (coincident, same direction)")
 case .antiParallel:
     print("Lines are antiparallel (coincident, opposite directions)")
+}
+```
+
+### Rhumb
+
+Solve rhumb-line (loxodrome) problems — paths of constant bearing on the
+ellipsoid. Uses order-6 series expansions, accurate to ~10 nm for WGS84.
+
+```swift
+import Rhumb
+
+let rhumb = Rhumb.wgs84
+
+// Inverse: given two points, find the constant-bearing azimuth and distance
+let inv = rhumb.inverse(latitude1: 40.6, longitude1: -73.8,
+                        latitude2: 51.6, longitude2: -0.5)
+// inv.azimuth — constant bearing (degrees)
+// inv.distance — rhumb distance (metres)
+// inv.area — signed area under the rhumb line (m²)
+
+// Direct: given a start point, bearing, and distance, find the destination
+let dest = rhumb.direct(latitude: 40.6, longitude: -73.8,
+                        azimuth: 50, distance: 5_500_000)
+// dest.latitude, dest.longitude, dest.area
+
+// Line: precompute for a route, then sample positions efficiently
+let line = rhumb.line(latitude: 40.6, longitude: -73.8, azimuth: 50)
+for d in stride(from: 0, through: 5_000_000, by: 500_000) {
+    let pos = line.position(distance: d)
+    print(pos.latitude, pos.longitude)
 }
 ```
 
@@ -239,6 +270,7 @@ let fwd = tm.forward(centralMeridian: -75.0, latitude: 40.0, longitude: -74.5)
 The series-based implementations match GeographicLib's stated accuracy:
 
 - **Geodesic**: 15 nm for the WGS84 ellipsoid
+- **Rhumb**: ~10 nm for the WGS84 ellipsoid (|f| < 0.01)
 - **Transverse Mercator**: 9 nm for points within 3900 km of the central
   meridian
 - **Intersect**: validated against `IntersectTool` (GeographicLib 2.7)
@@ -255,6 +287,8 @@ Karney. The algorithms and coefficient tables are described in:
 - C. F. F. Karney, *Transverse Mercator with an accuracy of a few nanometers*,
   J. Geodesy **85**(8), 475--485 (2011).
   [doi:10.1007/s00190-011-0445-3](https://doi.org/10.1007/s00190-011-0445-3)
+- C. F. F. Karney, *The area of rhumb polygons*, Technical Report (2023).
+  [doi:10.48550/arXiv.2303.03219](https://doi.org/10.48550/arXiv.2303.03219)
 
 ## License
 

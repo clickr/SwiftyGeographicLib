@@ -119,21 +119,18 @@ public let td : Double = 2.0 * hd
 /// Calculates the smallest signed angular difference from angle `x` to angle `y`.
 /// The result is in the range (-180°, 180°].
 ///
-/// This function is used to compute the angular distance from a central meridian
-/// to a given longitude.
+/// Delegates to ``angDiffWithError(_:_:)`` for correctness. An earlier
+/// implementation used `truncatingRemainder` without a second reduction
+/// step, which produced out-of-range results when `|y - x| > 180°`
+/// (e.g. `angDiff(170, -170)` returned −340 instead of +20). The bug was
+/// discovered while porting the Rhumb module (March 2026).
 ///
 /// - Parameters:
 ///   - x: The first angle in degrees.
 ///   - y: The second angle in degrees.
 /// - Returns: The signed angular difference from x to y in degrees.
 public func angDiff(_ x: Double, _ y: Double) -> Double {
-    // The unary minus must be applied to the result of truncatingRemainder,
-    // so we wrap it in parentheses to avoid ambiguity.
-    var d: Double = -(x.truncatingRemainder(dividingBy: td)) + y.truncatingRemainder(dividingBy: td)
-    if d == 0.0 || fabs(d) == hd {
-        d = copysign(d, y - x)
-    }
-    return d
+    angDiffWithError(x, y).d
 }
 
 /// Calculates the central meridian for a given UTM zone.

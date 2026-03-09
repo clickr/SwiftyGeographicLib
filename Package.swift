@@ -44,6 +44,10 @@ let package = Package(
             name: "Isogonic",
             targets: ["Isogonic"]
         ),
+        .library(
+            name: "Rhumb",
+            targets: ["Rhumb"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.0"),
@@ -165,10 +169,20 @@ let package = Package(
             name: "Geodesic",
             dependencies: ["Math"]
         ),
+        .target(
+            name: "Rhumb",
+            dependencies: ["Math"]
+        ),
         .testTarget(
             name: "GeodesicTests",
             dependencies: [
                 "Geodesic",
+                .product(name: "Numerics", package: "swift-numerics")]
+        ),
+        .testTarget(
+            name: "RhumbTests",
+            dependencies: [
+                "Rhumb",
                 .product(name: "Numerics", package: "swift-numerics")]
         )
     ]
