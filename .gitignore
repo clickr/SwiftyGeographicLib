@@ -7,3 +7,12 @@ DerivedData/
 .netrc
 .claude/
 /docs/
+
+# Compiled C++ reference generators
+Tests/*/ReferenceGenerators/tm_ref_values
+Tests/*/ReferenceGenerators/ps_ref_values
+Tests/*/ReferenceGenerators/ups_ref_values
+Tests/*/ReferenceGenerators/intersect_ref_values
+Tests/*/ReferenceGenerators/magnetic_ref_values
+Tests/TestGeneration/tm_gen
+Tests/TestGeneration/geocentric_gen

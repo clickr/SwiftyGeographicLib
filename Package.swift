@@ -87,7 +87,8 @@ let package = Package(
             name: "IntersectTests",
             dependencies: ["Intersect",
                            "Geodesic",
-                           .product(name: "Numerics", package: "swift-numerics")]
+                           .product(name: "Numerics", package: "swift-numerics")],
+            exclude: ["ReferenceGenerators"]
         ),
         .testTarget(
             name: "MathTests",
@@ -95,13 +96,15 @@ let package = Package(
         .testTarget(
             name: "PolarStereographicTests",
             dependencies: ["PolarStereographic",
-                           .product(name: "Numerics", package: "swift-numerics")]
+                           .product(name: "Numerics", package: "swift-numerics")],
+            exclude: ["ReferenceGenerators"]
         ),
         .testTarget(
             name: "TransverseMercatorTests",
             dependencies: ["TransverseMercator",
                            "Math",
-                           .product(name: "Numerics", package: "swift-numerics")]
+                           .product(name: "Numerics", package: "swift-numerics")],
+            exclude: ["ReferenceGenerators"]
         ),
         .testTarget(
             name: "UTMTests",
@@ -115,7 +118,8 @@ let package = Package(
             dependencies: [
                 "UPS",
                 "Constants",
-                .product(name: "Numerics", package: "swift-numerics")]
+                .product(name: "Numerics", package: "swift-numerics")],
+            exclude: ["ReferenceGenerators"]
         ),
         .testTarget(
             name: "UTMUPSTests",
@@ -129,7 +133,8 @@ let package = Package(
             name: "MagneticModelTests",
             dependencies: [
                 "MagneticModel",
-                .product(name: "Numerics", package: "swift-numerics")]
+                .product(name: "Numerics", package: "swift-numerics")],
+            exclude: ["ReferenceGenerators"]
         ),
         .target(
             name: "Geodesic",

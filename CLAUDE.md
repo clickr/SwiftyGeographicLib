@@ -27,6 +27,11 @@ When making changes:
 - **Heading levels:** no downward jumps greater than one level (e.g. h3 → h4,
   not h3 → h6). Upward jumps of any size are fine. Maximum depth is h6.
 
+## Learning notes
+
+`LEARNING-NOTES.md` captures technical insights and clarifications that
+arise during development but don't belong in the development log.
+
 ## Conventions
 
 - **Pure Swift.** No C++ at runtime. C++ reference values are generated

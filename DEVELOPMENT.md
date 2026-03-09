@@ -1124,3 +1124,31 @@ development log practices, pure-Swift policy, `@testable import` usage,
 domain typealiases, `@_exported import` pattern, testing conventions, and
 commit protocol.
 
+#### C++ reference value generators
+
+> "In SwiftyGeographicLib we used throwaway c++ code to generate reference values.
+> Can we include that code in the test folders (make sure that swift ignores that
+> code for building) including instructions on how to run it. Confirm that it
+> produces the same output as for our current test data"
+
+*(Claude Opus 4.6)*
+
+Added standalone C++ programs that reproduce the reference values used in Swift
+tests, generated against the system-installed GeographicLib C++ library.
+
+**Files created** (each in a `ReferenceGenerators/` subdirectory):
+- `Tests/TransverseMercatorTests/ReferenceGenerators/tm_ref_values.cpp` — TransverseMercator::UTM() internal fields
+- `Tests/PolarStereographicTests/ReferenceGenerators/ps_ref_values.cpp` — PolarStereographic::UPS() fields + Forward/Reverse
+- `Tests/UPSTests/ReferenceGenerators/ups_ref_values.cpp` — UTMUPS::Forward/Reverse
+- `Tests/IntersectTests/ReferenceGenerators/intersect_ref_values.cpp` — Intersect constructor constants + EllipsoidArea
+- `Tests/MagneticModelTests/ReferenceGenerators/magnetic_ref_values.cpp` — Geocentric, WMM2025 field values, FieldComponents
+
+**Other changes:**
+- `Package.swift` — added `exclude: ["ReferenceGenerators"]` to 5 test targets
+- `.gitignore` — added patterns for compiled reference generator binaries
+
+Each `.cpp` file contains build/run instructions in its header comment. All
+require GeographicLib installed via Homebrew (`brew install geographiclib`);
+the magnetic generator additionally requires WMM2025 data. All output was
+verified to match the hardcoded Swift test values exactly.
+
