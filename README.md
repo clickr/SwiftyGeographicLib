@@ -24,6 +24,8 @@ and reference-value generation — is recorded in
 | **PolarStereographic** | Polar Stereographic projection |
 | **UPS** | Universal Polar Stereographic projection |
 | **MagneticModel** | Geomagnetic field evaluation (WMM, IGRF, EMM) |
+| **Isogonic** | Contour lines of constant magnetic field properties (declination, inclination, intensity) over a geographic region |
+| **Ellipsoid** | Predefined reference ellipsoids (WGS 84, GRS 80, Clarke 1866, etc.) for use with TransverseMercator |
 
 ## Installation
 
@@ -185,6 +187,51 @@ let components = MagneticModel.fieldComponents(
 
 // Or use a Date directly
 let fieldNow = model.field(date: Date(), latitude: 47.6, longitude: -122.3, height: 0)
+```
+
+### Isogonic
+
+Generate contour lines of constant magnetic declination (isogonic lines),
+inclination, or intensity over a geographic region. Built on MagneticModel
+with marching-squares contour extraction.
+
+```swift
+import Isogonic
+
+let model = try MagneticModel(name: "wmm2025")
+let isogonic = Isogonic(model: model)
+
+let bounds = LatLonBounds(
+    minLatitude: 24, maxLatitude: 50,
+    minLongitude: -130, maxLongitude: -60)
+
+let contours = isogonic.contours(
+    values: stride(from: -20, through: 20, by: 5).map { Double($0) },
+    bounds: bounds,
+    time: 2026.0)
+// Each ContourLine has .value (degrees) and .coordinates [(lat, lon)]
+
+// On Apple platforms, use .clLocationCoordinates for MapKit
+for contour in contours {
+    let polyline = contour.clLocationCoordinates  // [CLLocationCoordinate2D]
+}
+```
+
+### Ellipsoid
+
+Predefined reference ellipsoids for use with TransverseMercator. Includes
+the WGS series (60, 66, 72, 84), GRS 80, International 1924, and Clarke 1866.
+
+```swift
+import Ellipsoid
+import TransverseMercator
+
+// Use a non-WGS84 ellipsoid with TransverseMercator
+let tm = try TransverseMercator(ellipsoid: .clarke1866, scaleFactor: 0.9996)
+let fwd = tm.forward(centralMeridian: -75.0, latitude: 40.0, longitude: -74.5)
+
+// Available ellipsoids: .wgs84, .wgs72, .wgs66, .wgs60,
+//                       .grs80, .international1924, .clarke1866
 ```
 
 ## Accuracy
