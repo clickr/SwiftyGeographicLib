@@ -40,6 +40,10 @@ let package = Package(
             name: "Ellipsoid",
             targets: ["Ellipsoid"]
         ),
+        .library(
+            name: "Isogonic",
+            targets: ["Isogonic"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.0"),
@@ -82,6 +86,10 @@ let package = Package(
         .target(
             name: "UTM",
             dependencies: ["TransverseMercator", "Math", "GeographicError", "UTMUPSProtocol", "Constants"]
+        ),
+        .target(
+            name: "Isogonic",
+            dependencies: ["MagneticModel"]
         ),
         .target(
             name: "MagneticModel",
@@ -137,6 +145,13 @@ let package = Package(
                 "UTM",
                 "UPS",
                 "Constants",
+                .product(name: "Numerics", package: "swift-numerics")]
+        ),
+        .testTarget(
+            name: "IsogenicTests",
+            dependencies: [
+                "Isogonic",
+                "MagneticModel",
                 .product(name: "Numerics", package: "swift-numerics")]
         ),
         .testTarget(
