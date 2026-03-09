@@ -10,7 +10,7 @@ import Foundation
 /// Indicates whether a projected coordinate lies in the northern or southern hemisphere.
 ///
 /// Used by UTM and UPS to distinguish the two hemispheric grids.
-public enum Hemisphere {
+public enum Hemisphere: Sendable {
     /// The northern hemisphere.
     case northern
     /// The southern hemisphere.

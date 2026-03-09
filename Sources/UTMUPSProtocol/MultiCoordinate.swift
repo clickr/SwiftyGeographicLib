@@ -7,7 +7,7 @@
 
 import Foundation
 import CoreLocation
-import Constants
+@_exported import Constants
 
 /// A distance in metres on a projected Cartesian grid (easting or northing).
 public typealias CartesianMetres = Double
