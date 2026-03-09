@@ -1081,3 +1081,46 @@ All seven modules build documentation with zero warnings after these fixes.
 Added `/docs/` to exclude generated `.doccarchive` bundles from version
 control.
 
+---
+
+### Session 7 — 9 March 2026 (Claude Opus 4.6)
+
+Used **Claude Opus 4.6** via Claude Code. Working in the FluentNavigation app
+project with SwiftyGeographicLib as a local package dependency.
+
+#### `CartesianMetres` typealias
+
+*(David Hart)*
+
+> *"I would like to use a similar pattern as for CLLocationDegrees — a
+> typealias named CartesianMetres for Double and modify the Cartesian protocol
+> in Sources/UTMUPSProtocol with its dependents in Sources/UTM and
+> Sources/UPS"*
+
+Added `CartesianMetres` typealias (`Double`) in UTMUPSProtocol, mirroring
+`CLLocationDegrees`. Adopted across UTM and UPS. See module logs:
+- [UTMUPSProtocol](Sources/UTMUPSProtocol/DEVELOPMENT.md#cartesianmetres-typealias)
+- [UTM](Sources/UTM/DEVELOPMENT.md#cartesianmetres-adoption)
+- [UPS](Sources/UPS/DEVELOPMENT.md#cartesianmetres-adoption)
+
+#### `@_exported import UTMUPSProtocol`
+
+*(David Hart)*
+
+> *"Can we rather re-export UTMUPSProtocol from Libraries that use it?"*
+
+Re-exported UTMUPSProtocol from UTM and UPS so consumers get
+`CartesianMetres`, `Cartesian`, `MultiCoordinate`, etc. via `import UTM`
+without a direct dependency. See module logs:
+- [UTM](Sources/UTM/DEVELOPMENT.md#_exported-import-utmupsprotocol)
+- [UPS](Sources/UPS/DEVELOPMENT.md#_exported-import-utmupsprotocol)
+
+#### `CLAUDE.md` added
+
+*(Claude Opus 4.6)*
+
+Created `CLAUDE.md` at the repository root capturing project conventions:
+development log practices, pure-Swift policy, `@testable import` usage,
+domain typealiases, `@_exported import` pattern, testing conventions, and
+commit protocol.
+

@@ -20,7 +20,7 @@ public struct UTMCoordinate : Cartesian {
     /// The hemisphere of the coordinate.
     public let hemisphere: Hemisphere
     /// The easting in metres, including the 500 km false easting.
-    public let easting: Double
+    public let easting: CartesianMetres
     /// The northing in metres, including the 10 000 km false northing in the southern hemisphere.
-    public let northing: Double
+    public let northing: CartesianMetres
 }

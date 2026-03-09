@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import UTMUPSProtocol
+@_exported import UTMUPSProtocol
 import CoreLocation
 import PolarStereographic
 import GeographicError
@@ -47,12 +47,12 @@ public struct UPS : MultiCoordinate {
     /// The easting coordinate in meters.
     ///
     /// This includes a false easting of 2,000,000 meters.
-    public var easting: Double { cartesianCoordinate.easting }
-    
+    public var easting: CartesianMetres { cartesianCoordinate.easting }
+
     /// The northing coordinate in meters.
     ///
     /// This includes a false northing of 2,000,000 meters.
-    public var northing: Double { cartesianCoordinate.northing }
+    public var northing: CartesianMetres { cartesianCoordinate.northing }
     
     /// The meridian convergence at the point in degrees.
     ///

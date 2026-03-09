@@ -19,7 +19,7 @@ public struct UPSCoordinate : UTMUPSProtocol.Cartesian {
     /// The hemisphere (northern or southern pole).
     public var hemisphere: Constants.Hemisphere
     /// The easting in metres, including the 2 000 000 m false easting.
-    public var easting: Double
+    public var easting: CartesianMetres
     /// The northing in metres, including the 2 000 000 m false northing.
-    public var northing: Double
+    public var northing: CartesianMetres
 }

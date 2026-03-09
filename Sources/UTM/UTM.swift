@@ -10,7 +10,7 @@ import CoreLocation
 import TransverseMercator
 import Math
 import GeographicError
-import UTMUPSProtocol
+@_exported import UTMUPSProtocol
 import Constants
 
 public struct UTM : MultiCoordinate {
@@ -35,9 +35,9 @@ public struct UTM : MultiCoordinate {
     /// The UTM zone number (1–60).
     public var zone: Int32 { cartesianCoordinate.zone }
     /// The easting in metres, including the 500 km false easting.
-    public var easting: Double { cartesianCoordinate.easting }
+    public var easting: CartesianMetres { cartesianCoordinate.easting }
     /// The northing in metres.
-    public var northing: Double { cartesianCoordinate.northing }
+    public var northing: CartesianMetres { cartesianCoordinate.northing }
     /// The latitude in degrees.
     public var latitude: CLLocationDegrees { geodeticCoordinate.latitude }
     /// The longitude in degrees.

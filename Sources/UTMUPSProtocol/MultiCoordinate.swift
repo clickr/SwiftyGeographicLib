@@ -9,6 +9,9 @@ import Foundation
 import CoreLocation
 import Constants
 
+/// A distance in metres on a projected Cartesian grid (easting or northing).
+public typealias CartesianMetres = Double
+
 /// A type that provides both geodetic (latitude/longitude) and projected
 /// (easting/northing) representations of a geographic coordinate.
 ///
@@ -19,9 +22,9 @@ public protocol MultiCoordinate {
     /// The hemisphere of the projected coordinate.
     var hemisphere: Hemisphere { get }
     /// The easting in metres, including any false easting.
-    var easting: Double { get }
+    var easting: CartesianMetres { get }
     /// The northing in metres, including any false northing.
-    var northing: Double { get }
+    var northing: CartesianMetres { get }
     /// The meridian convergence at the point, in degrees.
     var convergence: Double { get }
     /// The scale factor of the projection at the point.
@@ -47,7 +50,7 @@ public protocol Cartesian {
     /// The hemisphere of the projected coordinate.
     var hemisphere: Hemisphere { get }
     /// The easting in metres.
-    var easting: Double { get }
+    var easting: CartesianMetres { get }
     /// The northing in metres.
-    var northing: Double { get }
+    var northing: CartesianMetres { get }
 }
